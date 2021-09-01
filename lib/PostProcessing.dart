@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(PostProcessing());
-
 class PostProcessing extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -28,7 +26,10 @@ class PostProcessing extends StatelessWidget {
                     iconSize: 48,
                     color: Colors.black,
                     onPressed: () {
-                      print('123');
+                      Navigator.pushNamed(
+                        context,
+                        '/edit_page',
+                      );
                     },
                     icon: Icon(Icons.done_outlined),
                   ),

@@ -1,13 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'export_page_pdf_preview.dart';
-
-void main() {
-  runApp(MaterialApp(
-    title: "Last Page UI",
-    home: ExportPage(),
-  ));
-}
 
 class ExportPage extends StatelessWidget {
   final _titleController = TextEditingController();
@@ -34,9 +26,9 @@ class ExportPage extends StatelessWidget {
             child: IconButton(
               onPressed: () {
                 print("Icon pressed");
-                Navigator.push(
+                Navigator.pushNamed(
                   context,
-                  MaterialPageRoute(builder: (context) => PdfPreviewPage()),
+                  '/pdf_view',
                 );
               },
               icon: Image.network(

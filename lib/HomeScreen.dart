@@ -1,7 +1,4 @@
-import 'dart:html';
 import 'package:flutter/material.dart';
-
-void main() => runApp(HomeScreen());
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -43,7 +40,12 @@ class HomeScreen extends StatelessWidget {
             child: FittedBox(
               child: FloatingActionButton(
                 child: Icon(Icons.photo_camera_outlined),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/camera',
+                  );
+                },
               ),
             ),
           ),
