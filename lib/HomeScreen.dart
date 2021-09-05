@@ -22,7 +22,12 @@ class HomeScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/edit_page',
+                        );
+                      },
                       icon: Icon(Icons.edit),
                     ),
                     IconButton(
