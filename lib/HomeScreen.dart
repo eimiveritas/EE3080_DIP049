@@ -1,7 +1,26 @@
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  File? imageFile;
+
+  Future getImage() async {
+    var picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.camera);
+
+    setState(() {
+      imageFile = File(image!.path);
+      Navigator.pushNamed(context, '/post_process');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,12 +64,7 @@ class HomeScreen extends StatelessWidget {
             child: FittedBox(
               child: FloatingActionButton(
                 child: Icon(Icons.photo_camera_outlined),
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/camera',
-                  );
-                },
+                onPressed: getImage,
               ),
             ),
           ),
