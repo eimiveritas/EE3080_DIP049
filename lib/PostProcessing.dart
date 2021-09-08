@@ -1,14 +1,23 @@
+import 'dart:io';
+
+import 'package:ee3080_dip049/folderManager.dart';
 import 'package:flutter/material.dart';
 
 class PostProcessing extends StatelessWidget {
+  FolderManager folderManager = new FolderManager();
+
   @override
   Widget build(BuildContext context) {
+    final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
+    //if string data
+    print(arguments['imagePath']);
     return MaterialApp(
       home: Scaffold(
         body: Column(
           textDirection: TextDirection.ltr,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
+            Image.file(File(arguments['imagePath'])),
             Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -26,10 +35,21 @@ class PostProcessing extends StatelessWidget {
                     iconSize: 48,
                     color: Colors.black,
                     onPressed: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/edit_page',
-                      );
+                      var imagePathString = "";
+
+                      folderManager.createFolderWithCurrentDatetimePath
+                          .then((value) {
+                        print(value);
+                        imagePathString =
+                            "${value}${arguments['imagePath'].split('/').last}";
+
+                        File(arguments['imagePath']).copy(imagePathString);
+
+                        print(imagePathString);
+
+                        Navigator.pushNamed(context, '/edit_page',
+                            arguments: {'folderPath': value});
+                      });
                     },
                     icon: Icon(Icons.done_outlined),
                   ),

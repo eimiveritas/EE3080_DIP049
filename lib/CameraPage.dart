@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:ee3080_dip049/folderManager.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -11,13 +12,15 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> {
   File? _imageFile;
+  FolderManager folderManager = new FolderManager();
 
   Future getImage() async {
     var picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.camera);
-
+    var imagePathString =
+        "${folderManager.tempFolderPath}${image!.path.split('/').last}";
     setState(() {
-      _imageFile = File(image!.path);
+      _imageFile = File(imagePathString);
     });
   }
 
@@ -28,16 +31,20 @@ class _CameraPageState extends State<CameraPage> {
         title: Text("Home"),
       ),
       body: Center(
-          child:
-              _imageFile == null ? Text("No image.") : Container(child: Column(children: [
-                Image.file(_imageFile!),
-                TextButton(onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/post_process',
-                  );
-                }, child: Text("Post Possess"))
-              ],))),
+          child: _imageFile == null
+              ? Text("No image.")
+              : Container(
+                  child: Column(
+                  children: [
+                    Image.file(_imageFile!),
+                    TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/post_process',
+                              arguments: {'imagePath': _imageFile!.path});
+                        },
+                        child: Text("Post Possess"))
+                  ],
+                ))),
       floatingActionButton: FloatingActionButton(
         onPressed: getImage,
         tooltip: 'Scan',

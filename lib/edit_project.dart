@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 class EditProjectPage extends StatefulWidget {
   EditProjectPage({Key? key, required this.title}) : super(key: key);
@@ -28,8 +30,82 @@ List<Map> data = List.generate(
         }).toList();
 
 class _EditProjectPageState extends State<EditProjectPage> {
+  List<Widget> listArray = [];
+
+  Future<List<String>> populate(folderPath) async {
+    List<String> listOfDir = [];
+    var systemTempDir = Directory(folderPath);
+    await for (var entity
+        in systemTempDir.list(recursive: false, followLinks: false)) {
+      print(entity.path);
+      listOfDir.add(entity.path);
+    }
+    return listOfDir;
+  }
+
+  void _getListings(folderPath) {
+    // <<<<< Note this change for the return type
+    populate(folderPath).then((value) {
+      List<Widget> listings = [];
+      for (var i = 0; i < value.length; i++) {
+        print("Done");
+        listings.add(new Stack(
+          children: <Widget>[
+            Material(
+                color: Colors.amber,
+                child: InkWell(
+                  onTap: () {
+                    debugPrint("You clicked on page!");
+                  },
+                  child: ClipRect(
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      heightFactor: 1,
+                      child: Image.file(File(value[i])),
+                    ),
+                  ),
+                )),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: TextButton(
+                onPressed: () {
+                  debugPrint("You removed page}");
+                  setState(() {});
+                },
+                child: Text("X"),
+                style: TextButton.styleFrom(
+                    padding: EdgeInsets.all(0),
+                    backgroundColor: Colors.blue,
+                    primary: Colors.white),
+              ),
+            ),
+            Positioned(
+                bottom: 0,
+                //width: 10,
+                child: Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    value[i].split("/").last,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        backgroundColor: Colors.blue, color: Colors.white),
+                  ),
+                )),
+          ],
+        ));
+      }
+      setState(() {
+        listArray = listings;
+      });
+      print(listings.length.toString());
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
+    //if string data
     //data.add({
     //  "id": data.length,
     //  "name": "Product",
@@ -54,76 +130,17 @@ class _EditProjectPageState extends State<EditProjectPage> {
             child: Container(
               padding: EdgeInsets.all(10),
               child: Text(
-                'Last saved: 21 Aug 2021 5.00pm',
+                'Last saved: 21 Aug 2021 5.00pm ${arguments["folderPath"]}',
               ),
             ),
           ),
           Expanded(
-              child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 200,
-                      childAspectRatio: 3 / 2,
-                      crossAxisSpacing: 20,
-                      mainAxisSpacing: 20),
-                  itemCount: data.length,
-                  itemBuilder: (BuildContext ctx, index) {
-                    return Container(
-                      alignment: Alignment.center,
-                      child: Stack(
-                        children: <Widget>[
-                          Material(
-                              color: Colors.amber,
-                              child: InkWell(
-                                onTap: () {
-                                  debugPrint(
-                                      "You clicked on page ${index + 1}!");
-                                },
-                                child: ClipRect(
-                                  child: Align(
-                                    alignment: Alignment.topCenter,
-                                    heightFactor: 1,
-                                    child:
-                                        Image.network(data[index]["picture"]),
-                                  ),
-                                ),
-                              )),
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: TextButton(
-                              onPressed: () {
-                                debugPrint("You removed page ${index + 1}");
-                                setState(() {
-                                  data.removeAt(index);
-                                });
-                              },
-                              child: Text("X"),
-                              style: TextButton.styleFrom(
-                                  padding: EdgeInsets.all(0),
-                                  backgroundColor: Colors.blue,
-                                  primary: Colors.white),
-                            ),
-                          ),
-                          Positioned(
-                              bottom: 0,
-                              //width: 10,
-                              child: Padding(
-                                padding: EdgeInsets.all(10),
-                                child: Text(
-                                  data[index]["name"],
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      backgroundColor: Colors.blue,
-                                      color: Colors.white),
-                                ),
-                              )),
-                        ],
-                      ),
-                      decoration: BoxDecoration(
-                          color: Colors.amber,
-                          borderRadius: BorderRadius.circular(15)),
-                    );
-                  })),
+              child: GridView.count(crossAxisCount: 2, children: listArray)),
+          TextButton(
+              onPressed: () {
+                _getListings(arguments["folderPath"]);
+              },
+              child: Text("Get")),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
