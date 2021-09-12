@@ -1,11 +1,49 @@
+import 'dart:io';
+
+import 'package:ee3080_dip049/folderManager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class ExportPage extends StatelessWidget {
   final _titleController = TextEditingController();
 
+  FolderManager folderManager = new FolderManager();
+
+  Future<List<String>> populate(folderPath) async {
+    List<String> listOfDir = [];
+    var systemTempDir = Directory(folderPath);
+    await for (var entity
+        in systemTempDir.list(recursive: false, followLinks: false)) {
+      print(entity.path);
+      listOfDir.add(entity.path);
+    }
+    return listOfDir;
+  }
+
+  Future<String> createPdfFromImages(String folderPath) async {
+    List<String> listOfImages = await populate(folderPath);
+
+    final pdf = pw.Document();
+    for (String imgPath in listOfImages) {
+      var image = pw.MemoryImage(File(imgPath).readAsBytesSync());
+      pdf.addPage(pw.Page(build: (pw.Context context) {
+        return pw.Center(
+          child: pw.Image(image),
+        ); // Center
+      }));
+    }
+    final file = File("${await folderManager.tempFolderPath}/currentPDF.pdf");
+    await file.writeAsBytes(await pdf.save());
+
+    return file.path;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
+
     return Scaffold(
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -26,13 +64,18 @@ class ExportPage extends StatelessWidget {
             child: IconButton(
               onPressed: () {
                 print("Icon pressed");
+                Future<String> pdfPath =
+                    createPdfFromImages(arguments['folderPath']);
                 Navigator.pushNamed(
                   context,
                   '/pdf_view',
+                  arguments: {
+                    'folderPath': arguments['folderPath'],
+                    'pdfFilePath': pdfPath
+                  },
                 );
               },
               icon: Image.network(
-                //  "https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg",
                 "https://learnenglishteens.britishcouncil.org/sites/teens/files/b2w_a_for_and_against_essay_0.jpg",
               ),
             ),

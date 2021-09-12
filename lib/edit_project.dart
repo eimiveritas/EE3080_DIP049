@@ -168,6 +168,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   Navigator.pushNamed(
                     context,
                     '/export_page',
+                    arguments: {'folderPath': arguments["folderPath"]},
                   );
                 },
                 style: TextButton.styleFrom(
