@@ -32,6 +32,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   intl: ^0.17.0
   pdf: ^3.5.0
+  share: ^2.0.4
+
 
 
 

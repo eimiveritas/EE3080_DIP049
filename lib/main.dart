@@ -35,7 +35,6 @@ class MyApp extends StatelessWidget {
         '/post_process': (context) => PostProcessing(),
         '/edit_page': (context) => EditProjectPage(title: "Edit Page"),
         '/export_page': (context) => ExportPage(),
-        '/pdf_view': (context) => PdfPreviewPage(),
       },
     );
   }
