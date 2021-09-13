@@ -85,6 +85,7 @@ class _ExportPageState extends State<ExportPage> {
                 createPdfFromImages(arguments['folderPath']).then((pdfPath) {
                   print("onPressed, in then(), pdfPath: " + pdfPath);
 
+                  // be able to pass arguments which can then be used outside build() method;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
