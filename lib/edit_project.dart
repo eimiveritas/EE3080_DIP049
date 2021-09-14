@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ee3080_dip049/export_page.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -165,11 +166,17 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   child: TextButton(
                 child: Text("Export"),
                 onPressed: () {
-                  Navigator.pushNamed(
+                  Navigator.push(
                     context,
-                    '/export_page',
-                    arguments: {'folderPath': arguments["folderPath"]},
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            ExportPage(arguments['folderPath'])),
                   );
+                  // Navigator.pushNamed(
+                  //   context,
+                  //   '/export_page',
+                  //   arguments: {'folderPath': arguments["folderPath"]},
+                  // );
                 },
                 style: TextButton.styleFrom(
                     primary: Colors.white,

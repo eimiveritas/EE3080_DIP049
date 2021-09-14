@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         '/camera': (context) => CameraPage(),
         '/post_process': (context) => PostProcessing(),
         '/edit_page': (context) => EditProjectPage(title: "Edit Page"),
-        '/export_page': (context) => ExportPage(),
+        // '/export_page': (context) => ExportPage(),
       },
     );
   }

@@ -42,10 +42,8 @@ class _PdfPreviewPageState extends State<PdfPreviewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // title of the file， will be replaced by the title passed
-        title: Text("PDF PREVIEW: " + pdfTitle),
+        title: Text("PDF Preview: " + pdfTitle),
       ),
-      // body to view the pdf file
       body: Center(
           child: _isLoading
               ? Center(child: CircularProgressIndicator())
