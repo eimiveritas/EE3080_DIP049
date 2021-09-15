@@ -95,6 +95,26 @@ class _EditProjectPageState extends State<EditProjectPage> {
           ],
         ));
       }
+
+      listings.add(new Stack(
+        children: <Widget>[
+          Material(
+              color: Colors.amber,
+              child: InkWell(
+                onTap: () {
+                  debugPrint("You clicked on page!");
+                },
+                child: ClipRect(
+                  child: Align(
+                    alignment: Alignment.center,
+                    //heightFactor: 1,
+                    child: Text("+", style: TextStyle(fontSize: 50)),
+                  ),
+                ),
+              )),
+        ],
+      ));
+
       setState(() {
         listArray = listings;
       });
