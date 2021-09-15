@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:ee3080_dip049/folderManager.dart';
@@ -18,9 +19,27 @@ class _HomeScreenState extends State<HomeScreen> {
   FolderManager folderManager = new FolderManager();
   List<Widget> listArray = [];
 
-  Future getImage() async {
+  Future _openCamera() async {
     var picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.camera);
+    var imagePathString = "";
+    //File('/storage/emulated/0/Download/counter.txt')
+    folderManager.tempFolderPath.then((value) {
+      print(value);
+      imagePathString = "${value}${image!.path.split('/').last}";
+
+      File(image.path).copy(imagePathString);
+
+      setState(() {
+        Navigator.pushNamed(context, '/post_process',
+            arguments: {'imagePath': imagePathString});
+      });
+    });
+  }
+
+  Future _openGallery() async {
+    var picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
     var imagePathString = "";
     //File('/storage/emulated/0/Download/counter.txt')
     folderManager.tempFolderPath.then((value) {
@@ -100,46 +119,79 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _showChoiceDialog(BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              title: Text('Launch App'),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(15))),
+              elevation: 24.0,
+              content: SingleChildScrollView(
+                child: ListBody(
+                  // mainAxis: Axis.horizontal,
+                  children: [
+                    GestureDetector(
+                      child: Text('Camera'),
+                      onTap: () {
+                        _openCamera();
+                      },
+                    ),
+                    Padding(padding: EdgeInsets.all(8.0)),
+                    GestureDetector(
+                      child: Text('Gallery'),
+                      onTap: () {
+                        _openGallery();
+                      },
+                    )
+                  ],
+                ),
+              ));
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Projects',
       home: Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            title: const Text('Projects'),
-          ),
-          body: Padding(
-              padding: const EdgeInsets.all(18.0),
-              child: Column(
-                children: [
-                  Column(
-                    children: listArray,
-                  ),
-                  TextButton(
-                      onPressed: () {
-                        _getListings();
-                      },
-                      child: Text("Test")),
-                  TextButton(
-                      onPressed: () {
-                        _downloadAndSavePhoto();
-                      },
-                      child: Text("Populate"))
-                ],
-              )),
-          floatingActionButton: Container(
-            height: 100.0,
-            width: 100.0,
-            child: FittedBox(
-              child: FloatingActionButton(
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Text('Projects'),
+        ),
+        body: Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: Column(
+              children: [
+                Column(
+                  children: listArray,
+                ),
+                TextButton(
+                    onPressed: () {
+                      _getListings();
+                    },
+                    child: Text("Test")),
+                TextButton(
+                    onPressed: () {
+                      _downloadAndSavePhoto();
+                    },
+                    child: Text("Populate"))
+              ],
+            )),
+        floatingActionButton: Container(
+          height: 100,
+          width: 100,
+          child: FittedBox(
+            child: FloatingActionButton(
                 child: Icon(Icons.photo_camera_outlined),
-                onPressed: getImage,
-              ),
-            ),
+                onPressed: () async {
+                  await _showChoiceDialog(context);
+                }),
           ),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerFloat),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      ),
     );
   }
 }
