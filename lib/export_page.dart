@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share/share.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart' as syncpdf;
+import 'package:path/path.dart' as Path;
 
 import 'export_page_pdf_preview.dart';
 
@@ -22,33 +24,66 @@ class _ExportPageState extends State<ExportPage> {
 
   FolderManager folderManager = new FolderManager();
 
-  final _titleController = TextEditingController(text: "Untitled File");
+  final _titleController = TextEditingController(text: "Untitled");
+  final _passwordController = TextEditingController(text: "");
   late String pdfFilePath;
-  // CARE: the postfix (name of the pdf) is always Untitled File.pdf;
-  // CARE: path not changed when a new title is entered;
-  // CARE: when viewing pdf, always view the UntitileD File.pdf;
-  // CARE: when sharing, copy to pdf file with current title. share the copied one;
 
   @override
   void initState() {
     super.initState();
-    createSavePdfFile();
+    createPdf();
   }
 
-  // create the pdf file and save; file also referenced by the pdfFilePath field;
-  createSavePdfFile() async {
+  // create the pdf file and save; file path referenced by the pdfFilePath field;
+  createPdf() async {
     print("Inside createSavePdfFile()");
-    pdfFilePath = await createPdfFromImages(_folderPath);
+    this.pdfFilePath = await createPdfFromImages(_folderPath);
     print("Finish createSavePdfFile(), " + pdfFilePath);
   }
 
-  // rename and share the file, called when sharing;
-  shareRenamedPdf() async {
-    String newPath =
-        "${await folderManager.tempFolderPath}${_titleController.text}.pdf";
-    await File(pdfFilePath).copy(newPath);
-    print("file to share: " + newPath);
-    Share.shareFiles([newPath]);
+  // rename the pdf file (path & title) upon inputing the new title
+  renamePdf(String newTitle) async {
+    // var lastSeparator = this.pdfFilePath.lastIndexOf(Platform.pathSeparator);
+    // var newPath =
+    //     this.pdfFilePath.substring(0, lastSeparator + 1) + newTitle + ".pdf";
+    var newPath =
+        Path.join(await folderManager.tempFolderPath, "$newTitle.pdf");
+    this.pdfFilePath = File(this.pdfFilePath).renameSync(newPath).path;
+    print("Renamed pdf path: " + this.pdfFilePath);
+  }
+
+  // share the file; if password is set, share the encrypted one
+  sharePdf() async {
+    String pdfToShare = this.pdfFilePath;
+    if (_passwordController.text != "") {
+      pdfToShare =
+          await encryptePdf(this.pdfFilePath, _passwordController.text);
+      var newPath = Path.join(await folderManager.tempFolderPath,
+          "Encrypted-${this._titleController.text}.pdf");
+      pdfToShare = File(pdfToShare).renameSync(newPath).path;
+    }
+    print("file to share: " + pdfToShare);
+    Share.shareFiles([pdfToShare]);
+  }
+
+  // use the _passwordController.text to set the password for pdf
+  // called when sharing;
+  Future<String> encryptePdf(String pdfToEncryptPath, String password) async {
+    final syncpdf.PdfDocument document = syncpdf.PdfDocument(
+        inputBytes: File(pdfToEncryptPath).readAsBytesSync());
+
+    final syncpdf.PdfSecurity security = document.security;
+
+    security.userPassword = password;
+    // security.ownerPassword = 'ownerpassword@123';
+
+    security.algorithm = syncpdf.PdfEncryptionAlgorithm.aesx256Bit;
+
+    File encryptedFile = await File(
+            Path.join(await folderManager.tempFolderPath, "Encrypted.pdf"))
+        .writeAsBytes(document.save());
+    document.dispose();
+    return encryptedFile.path;
   }
 
   // return a list containing all images under the project folder;
@@ -78,11 +113,11 @@ class _ExportPageState extends State<ExportPage> {
       }));
     }
 
-    final file = File(
-        "${await folderManager.tempFolderPath}${_titleController.text}.pdf");
+    final file =
+        File(Path.join(await folderManager.tempFolderPath, "Untitled.pdf"));
     await file.writeAsBytes(await pdf.save());
 
-    print("Inside createPDF method: " + file.path);
+    print("Inside createPdfFromImages method: " + file.path);
     return file.path;
   }
 
@@ -99,9 +134,15 @@ class _ExportPageState extends State<ExportPage> {
             child: TextField(
               textAlign: TextAlign.center,
               controller: _titleController,
-              // decoration: InputDecoration(
-              //   labelText: "Enter the title of file here",
-              // ),
+              decoration: InputDecoration(
+                labelText: "Enter the title of file here",
+              ),
+              onSubmitted: (_) {
+                renamePdf(_titleController.text);
+              },
+              // onEditingComplete: () {
+              //   renamePdf(_titleController.text);
+              // },
             ),
           ),
           Container(
@@ -123,12 +164,22 @@ class _ExportPageState extends State<ExportPage> {
             ),
           ),
           Container(
+            color: Colors.blue,
+            child: TextField(
+              textAlign: TextAlign.start,
+              controller: _passwordController,
+              decoration: InputDecoration(
+                labelText: "Set Password for PDF?",
+              ),
+            ),
+          ),
+          Container(
             width: 150,
             height: 60,
             child: ElevatedButton(
               onPressed: () {
                 print("READY TO SHARE");
-                shareRenamedPdf();
+                sharePdf();
               },
               child: Text("SHARE"),
             ),
@@ -140,9 +191,10 @@ class _ExportPageState extends State<ExportPage> {
                 onPressed: () {
                   print(_titleController.text);
                   print(pdfFilePath);
+                  print(_passwordController.text);
                 },
                 child: Text(
-                  "Export",
+                  "PRINT",
                   style: TextStyle(fontSize: 18),
                 )),
           )

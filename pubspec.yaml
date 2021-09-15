@@ -33,6 +33,7 @@ dependencies:
   intl: ^0.17.0
   pdf: ^3.5.0
   share: ^2.0.4
+  syncfusion_flutter_pdf: ^19.2.62-beta
 
 
 
