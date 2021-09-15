@@ -38,6 +38,8 @@ class _EditProjectPageState extends State<EditProjectPage> {
   File? imageFile;
   FolderManager folderManager = new FolderManager();
 
+  TextEditingController _controller = TextEditingController();
+
   Future _openCamera(arguments) async {
     var picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.camera);
@@ -209,6 +211,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
     //  "name": "Product",
     //  "picture": "https://picsum.photos/250?image=1"
     //});
+    _controller.text = arguments['folderPath'].split('/').last;
 
     return Scaffold(
       appBar: AppBar(
@@ -219,7 +222,8 @@ class _EditProjectPageState extends State<EditProjectPage> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          TextField(
+          TextFormField(
+            controller: _controller,
             decoration: const InputDecoration(
                 border: OutlineInputBorder(), hintText: 'Untitled Project'),
           ),
