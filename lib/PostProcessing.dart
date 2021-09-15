@@ -91,11 +91,11 @@ class PostProcessingState extends State<PostProcessing> {
                           onPressed: () {
                             var imagePathString = "";
 
-                            folderManager.createFolderWithCurrentDatetimePath
-                                .then((value) {
-                              print(value);
+                            if (arguments.containsKey('folderPath')) {
                               imagePathString =
-                                  "${value}${arguments['imagePath'].split('/').last}";
+                                  "${arguments['folderPath']}/${arguments['imagePath'].split('/').last}";
+
+                              print(imagePathString);
 
                               File(arguments['imagePath'])
                                   .copy(imagePathString);
@@ -103,8 +103,25 @@ class PostProcessingState extends State<PostProcessing> {
                               print(imagePathString);
 
                               Navigator.pushNamed(context, '/edit_page',
-                                  arguments: {'folderPath': value});
-                            });
+                                  arguments: {
+                                    'folderPath': arguments['folderPath']
+                                  });
+                            } else {
+                              folderManager.createFolderWithCurrentDatetimePath
+                                  .then((value) {
+                                print(value);
+                                imagePathString =
+                                    "${value}${arguments['imagePath'].split('/').last}";
+
+                                File(arguments['imagePath'])
+                                    .copy(imagePathString);
+
+                                print(imagePathString);
+
+                                Navigator.pushNamed(context, '/edit_page',
+                                    arguments: {'folderPath': value});
+                              });
+                            }
                           },
                           icon: Icon(Icons.done_outlined),
                         ),
