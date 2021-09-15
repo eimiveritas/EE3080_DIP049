@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ee3080_dip049/export_page.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -95,6 +96,26 @@ class _EditProjectPageState extends State<EditProjectPage> {
           ],
         ));
       }
+
+      listings.add(new Stack(
+        children: <Widget>[
+          Material(
+              color: Colors.amber,
+              child: InkWell(
+                onTap: () {
+                  debugPrint("You clicked on page!");
+                },
+                child: ClipRect(
+                  child: Align(
+                    alignment: Alignment.center,
+                    //heightFactor: 1,
+                    child: Text("+", style: TextStyle(fontSize: 50)),
+                  ),
+                ),
+              )),
+        ],
+      ));
+
       setState(() {
         listArray = listings;
       });
@@ -165,10 +186,17 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   child: TextButton(
                 child: Text("Export"),
                 onPressed: () {
-                  Navigator.pushNamed(
+                  Navigator.push(
                     context,
-                    '/export_page',
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            ExportPage(arguments['folderPath'])),
                   );
+                  // Navigator.pushNamed(
+                  //   context,
+                  //   '/export_page',
+                  //   arguments: {'folderPath': arguments["folderPath"]},
+                  // );
                 },
                 style: TextButton.styleFrom(
                     primary: Colors.white,

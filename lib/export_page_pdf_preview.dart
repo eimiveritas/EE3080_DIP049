@@ -1,12 +1,25 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:advance_pdf_viewer/advance_pdf_viewer.dart';
 
 class PdfPreviewPage extends StatefulWidget {
+  final String pdfFilePath;
+  final String pdfTitle;
+
+  PdfPreviewPage(this.pdfTitle, this.pdfFilePath);
+
   @override
-  _PdfPreviewPageState createState() => _PdfPreviewPageState();
+  _PdfPreviewPageState createState() =>
+      _PdfPreviewPageState(pdfTitle, pdfFilePath);
 }
 
 class _PdfPreviewPageState extends State<PdfPreviewPage> {
+  final String pdfTitle;
+  final String pdfFilePath;
+
+  _PdfPreviewPageState(this.pdfTitle, this.pdfFilePath);
+
   bool _isLoading = true;
   late PDFDocument document;
 
@@ -17,9 +30,9 @@ class _PdfPreviewPageState extends State<PdfPreviewPage> {
   }
 
   loadDocument() async {
-    // document shoud be replaced by the pdf file we created in the future.
-    document = await PDFDocument.fromURL(
-        "http://conorlastowka.com/book/CitationNeededBook-Sample.pdf");
+    print("inside loadDocument: " + pdfFilePath);
+
+    document = await PDFDocument.fromFile(File(pdfFilePath));
     setState(() {
       _isLoading = false;
     });
@@ -29,8 +42,7 @@ class _PdfPreviewPageState extends State<PdfPreviewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // title of the file will be replaced by the title set
-        title: const Text("PDF PREVIEW: TITLE HERE"),
+        title: Text("PDF Preview: " + pdfTitle),
       ),
       body: Center(
           child: _isLoading
