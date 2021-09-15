@@ -111,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           body: Padding(
               padding: const EdgeInsets.all(18.0),
-              child: Column(
+              child: ListView(
                 children: [
                   Column(
                     children: listArray,
