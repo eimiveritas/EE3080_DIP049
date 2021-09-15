@@ -9,7 +9,7 @@ import 'package:share/share.dart';
 import 'export_page_pdf_preview.dart';
 
 class ExportPage extends StatefulWidget {
-  String _folderPath;
+  final String _folderPath;
   ExportPage(this._folderPath);
 
   @override
@@ -17,7 +17,7 @@ class ExportPage extends StatefulWidget {
 }
 
 class _ExportPageState extends State<ExportPage> {
-  String _folderPath;
+  final String _folderPath;
   _ExportPageState(this._folderPath);
 
   FolderManager folderManager = new FolderManager();
@@ -35,7 +35,7 @@ class _ExportPageState extends State<ExportPage> {
     createSavePdfFile();
   }
 
-  // create the pdf file and save; also referenced by the pdfFilePath field;
+  // create the pdf file and save; file also referenced by the pdfFilePath field;
   createSavePdfFile() async {
     print("Inside createSavePdfFile()");
     pdfFilePath = await createPdfFromImages(_folderPath);
