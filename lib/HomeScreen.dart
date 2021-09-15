@@ -130,7 +130,6 @@ class _HomeScreenState extends State<HomeScreen> {
               elevation: 24.0,
               content: SingleChildScrollView(
                 child: ListBody(
-                  // mainAxis: Axis.horizontal,
                   children: [
                     GestureDetector(
                       child: Text('Camera'),
