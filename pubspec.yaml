@@ -34,6 +34,7 @@ dependencies:
   pdf: ^3.5.0
   share: ^2.0.4
   syncfusion_flutter_pdf: ^19.2.62-beta
+  rounded_loading_button: ^2.0.9
 
 
 
