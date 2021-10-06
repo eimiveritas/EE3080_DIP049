@@ -5,6 +5,7 @@ import 'PostProcessing.dart';
 import 'edit_project.dart';
 import 'export_page.dart';
 import 'export_page_pdf_preview.dart';
+import 'ProcessingScreen.dart';
 
 void main() {
   runApp(MyApp());
@@ -34,6 +35,7 @@ class MyApp extends StatelessWidget {
         '/camera': (context) => CameraPage(),
         '/post_process': (context) => PostProcessing(),
         '/edit_page': (context) => EditProjectPage(title: "Edit Page"),
+        '/process': (context) => ProcessingScreen(),
         // '/export_page': (context) => ExportPage(),
       },
     );

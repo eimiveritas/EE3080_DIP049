@@ -27,11 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
     folderManager.tempFolderPath.then((value) {
       print(value);
       imagePathString = "${value}${image!.path.split('/').last}";
-
       File(image.path).copy(imagePathString);
 
       setState(() {
-        Navigator.pushNamed(context, '/post_process',
+        Navigator.pushNamed(context, '/process',
             arguments: {'imagePath': imagePathString});
       });
     });
@@ -49,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
       File(image.path).copy(imagePathString);
 
       setState(() {
-        Navigator.pushNamed(context, '/post_process',
+        Navigator.pushNamed(context, '/process',
             arguments: {'imagePath': imagePathString});
       });
     });
@@ -161,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         body: Padding(
             padding: const EdgeInsets.all(18.0),
-            child: Column(
+            child: ListView(
               children: [
                 Column(
                   children: listArray,

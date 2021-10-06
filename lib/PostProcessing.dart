@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:ee3080_dip049/folderManager.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+//import 'package:image_editor/image_editor.dart';
 
 class PostProcessing extends StatefulWidget {
   @override
@@ -15,8 +17,7 @@ class PostProcessingState extends State<PostProcessing> {
   double currentAngle = 0;
   //Temporary Camera Function for the back button.
   Future getImage() async {
-    var picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.camera);
+    final image = await ImagePicker().pickImage(source: ImageSource.camera);
     var imagePathString = "";
     //File('/storage/emulated/0/Download/counter.txt')
     folderManager.tempFolderPath.then((value) {
@@ -91,11 +92,11 @@ class PostProcessingState extends State<PostProcessing> {
                           onPressed: () {
                             var imagePathString = "";
 
-                            folderManager.createFolderWithCurrentDatetimePath
-                                .then((value) {
-                              print(value);
+                            if (arguments.containsKey('folderPath')) {
                               imagePathString =
-                                  "${value}${arguments['imagePath'].split('/').last}";
+                                  "${arguments['folderPath']}/${arguments['imagePath'].split('/').last}";
+
+                              print(imagePathString);
 
                               File(arguments['imagePath'])
                                   .copy(imagePathString);
@@ -103,8 +104,25 @@ class PostProcessingState extends State<PostProcessing> {
                               print(imagePathString);
 
                               Navigator.pushNamed(context, '/edit_page',
-                                  arguments: {'folderPath': value});
-                            });
+                                  arguments: {
+                                    'folderPath': arguments['folderPath']
+                                  });
+                            } else {
+                              folderManager.createFolderWithCurrentDatetimePath
+                                  .then((value) {
+                                print(value);
+                                imagePathString =
+                                    "${value}${arguments['imagePath'].split('/').last}";
+
+                                File(arguments['imagePath'])
+                                    .copy(imagePathString);
+
+                                print(imagePathString);
+
+                                Navigator.pushNamed(context, '/edit_page',
+                                    arguments: {'folderPath': value});
+                              });
+                            }
                           },
                           icon: Icon(Icons.done_outlined),
                         ),
@@ -202,3 +220,34 @@ class PostProcessingState extends State<PostProcessing> {
     );
   }
 }
+
+// class ImageEditor extends CustomPainter {
+//   ImageEditor({
+//     required image,
+//   });
+
+//   ui.Image? image;
+
+//   List<Offset> points = List();
+
+//   final Paint painter = new Paint()
+//     ..color = Color.blue[400]
+//     ..style = PaintingStyle.fill;
+
+//   void update(Offset offset) {
+//     points.add(offset);
+//   }
+
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     canvas.drawImage(image!, Offset(0.0, 0.0), Paint());
+//     for (Offset offset in points) {
+//       canvas.drawCircle(offset, 10, painter);
+//     }
+//   }
+
+//   @override
+//   bool shouldRepaint(CustomPainter oldDelegate) {
+//     return true;
+//   }
+// }

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:ee3080_dip049/export_page.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:ee3080_dip049/folderManager.dart';
+import 'package:image_picker/image_picker.dart';
 
 class EditProjectPage extends StatefulWidget {
   EditProjectPage({Key? key, required this.title}) : super(key: key);
@@ -33,6 +35,82 @@ List<Map> data = List.generate(
 class _EditProjectPageState extends State<EditProjectPage> {
   List<Widget> listArray = [];
 
+  File? imageFile;
+  FolderManager folderManager = new FolderManager();
+
+  TextEditingController _controller = TextEditingController();
+
+  Future _openCamera(arguments) async {
+    var picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.camera);
+    var imagePathString = "";
+    //File('/storage/emulated/0/Download/counter.txt')
+    folderManager.tempFolderPath.then((value) {
+      print(value);
+      imagePathString = "${value}${image!.path.split('/').last}";
+
+      File(image.path).copy(imagePathString);
+
+      setState(() {
+        Navigator.pushNamed(context, '/post_process', arguments: {
+          'imagePath': imagePathString,
+          'folderPath': arguments["folderPath"],
+        });
+      });
+    });
+  }
+
+  Future _openGallery(arguments) async {
+    var picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    var imagePathString = "";
+    //File('/storage/emulated/0/Download/counter.txt')
+    folderManager.tempFolderPath.then((value) {
+      print(value);
+      imagePathString = "${value}${image!.path.split('/').last}";
+
+      File(image.path).copy(imagePathString);
+
+      setState(() {
+        Navigator.pushNamed(context, '/post_process', arguments: {
+          'imagePath': imagePathString,
+          'folderPath': arguments["folderPath"],
+        });
+      });
+    });
+  }
+
+  Future<void> _showChoiceDialog(BuildContext context, arguments) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              title: Text('Launch App'),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(15))),
+              elevation: 24.0,
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: [
+                    GestureDetector(
+                      child: Text('Camera'),
+                      onTap: () {
+                        _openCamera(arguments);
+                      },
+                    ),
+                    Padding(padding: EdgeInsets.all(8.0)),
+                    GestureDetector(
+                      child: Text('Gallery'),
+                      onTap: () {
+                        _openGallery(arguments);
+                      },
+                    )
+                  ],
+                ),
+              ));
+        });
+  }
+
   Future<List<String>> populate(folderPath) async {
     List<String> listOfDir = [];
     var systemTempDir = Directory(folderPath);
@@ -44,7 +122,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
     return listOfDir;
   }
 
-  void _getListings(folderPath) {
+  void _getListings(folderPath, arguments) {
     // <<<<< Note this change for the return type
     populate(folderPath).then((value) {
       List<Widget> listings = [];
@@ -102,8 +180,9 @@ class _EditProjectPageState extends State<EditProjectPage> {
           Material(
               color: Colors.amber,
               child: InkWell(
-                onTap: () {
+                onTap: () async {
                   debugPrint("You clicked on page!");
+                  await _showChoiceDialog(context, arguments);
                 },
                 child: ClipRect(
                   child: Align(
@@ -132,6 +211,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
     //  "name": "Product",
     //  "picture": "https://picsum.photos/250?image=1"
     //});
+    _controller.text = arguments['folderPath'].split('/').last;
 
     return Scaffold(
       appBar: AppBar(
@@ -142,7 +222,8 @@ class _EditProjectPageState extends State<EditProjectPage> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          TextField(
+          TextFormField(
+            controller: _controller,
             decoration: const InputDecoration(
                 border: OutlineInputBorder(), hintText: 'Untitled Project'),
           ),
@@ -159,7 +240,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
               child: GridView.count(crossAxisCount: 2, children: listArray)),
           TextButton(
               onPressed: () {
-                _getListings(arguments["folderPath"]);
+                _getListings(arguments["folderPath"], arguments);
               },
               child: Text("Get")),
           Row(
