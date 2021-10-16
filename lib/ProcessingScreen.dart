@@ -1,4 +1,6 @@
+import 'package:advance_pdf_viewer/advance_pdf_viewer.dart';
 import 'package:ee3080_dip049/edit_project.dart';
+import 'package:ee3080_dip049/folderManager.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -6,6 +8,9 @@ import 'dart:typed_data';
 import 'package:image_editor/image_editor.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:oktoast/oktoast.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:uuid/uuid.dart';
 
 class ProcessingScreen extends StatefulWidget {
   const ProcessingScreen({Key? key}) : super(key: key);
@@ -17,12 +22,14 @@ class ProcessingScreen extends StatefulWidget {
 class _ProcessingScreenState extends State<ProcessingScreen> {
   final GlobalKey<ExtendedImageEditorState> editorKey = GlobalKey();
 
+  FolderManager folderManager = new FolderManager();
+
   double sat = 1;
   double bright = 0;
   double con = 1;
 
   ImageProvider provider = ExtendedExactAssetImageProvider(
-    'imagePath',
+    'Processing Image',
     cacheRawData: true,
   );
 
@@ -80,6 +87,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
   Widget build(BuildContext context) {
     final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
     //if string data
+
     print(arguments['imagePath']);
     provider = ExtendedFileImageProvider(File(arguments['imagePath']),
         cacheRawData: true);
@@ -101,7 +109,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
           IconButton(
               icon: Icon(Icons.check),
               onPressed: () async {
-                await crop();
+                await done(arguments);
               }),
         ],
       ),
@@ -199,7 +207,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     );
   }
 
-  Future<void> crop([bool test = false]) async {
+  Future<void> done(Map arg, [bool test = false]) async {
     final ExtendedImageEditorState? state = editorKey.currentState;
     if (state == null) {
       return;
@@ -236,32 +244,60 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
     option.outputFormat = const OutputFormat.png(88);
 
-    print(const JsonEncoder.withIndent('  ').convert(option.toJson()));
-
-    final DateTime start = DateTime.now();
     final Uint8List? result = await ImageEditor.editImage(
       image: img,
       imageEditorOption: option,
     );
 
-    print('result.length = ${result?.length}');
+    var uuid = Uuid();
+    final fileName = uuid.v1() + ".png";
+    print("File name is $fileName");
 
-    final Duration diff = DateTime.now().difference(start);
+    if (result != null) {
+      _storingInFolder(arg, fileName, result).then((editedImagePathString) {
+        print(
+            "Edited image path after storing function: $editedImagePathString");
 
-    print('image_editor time : $diff');
-    showToast('handle duration: $diff',
-        duration: const Duration(seconds: 5), dismissOtherToast: true);
+        String folderPathString =
+            _getFolderfromImagePath(editedImagePathString);
 
-    if (result == null) return;
-    Future.delayed(Duration(seconds: 0)).then(
-      (value) => Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => EditProjectPage(title: 'Edit Page'
-//                  arguments: [image],
-                )),
-      ),
-    );
+        setState(() {
+          Navigator.pushReplacementNamed(context, '/edit_page',
+              arguments: {'folderPath': folderPathString});
+        });
+      });
+    }
+  }
+
+  Future<String> _storingInFolder(
+      Map arguments, String fileName, Uint8List imageinBytes) async {
+    String editedImagePath = "";
+
+    if (arguments.containsKey('folderPath')) {
+      editedImagePath = "${arguments['folderPath']}/$fileName";
+    } else {
+      String value = await folderManager.createFolderWithCurrentDatetimePath;
+      print(value);
+      editedImagePath = "$value$fileName";
+    }
+
+    print(editedImagePath);
+    File(editedImagePath).writeAsBytes(imageinBytes);
+
+    return editedImagePath;
+  }
+
+  String _getFolderfromImagePath(String imagePath) {
+    String folderPath = "";
+
+    List<String> folders = imagePath.split('/');
+    for (int x = 1; x < folders.length - 1; x++) {
+      String folder = folders[x];
+      folderPath += '/' + folder;
+    }
+    folderPath = folderPath + '/';
+    print(folderPath);
+    return folderPath;
   }
 
   void flip() {

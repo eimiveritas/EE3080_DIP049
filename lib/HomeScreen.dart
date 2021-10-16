@@ -22,12 +22,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Future _openCamera() async {
     var picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.camera);
-    var imagePathString = "";
     //File('/storage/emulated/0/Download/counter.txt')
     folderManager.tempFolderPath.then((value) {
-      print(value);
-      imagePathString = "${value}${image!.path.split('/').last}";
+      print("Temp Folder Path is $value.");
+      print(
+          "Immediately after taking the image, the image path is ${image!.path}");
+      final imagePathString = "$value${image.path.split('/').last}";
+      print("The image is now migrated to $imagePathString");
+
       File(image.path).copy(imagePathString);
+      //A File consisiting an image is created from the image path. This file is now stored in the imagePathString.
 
       setState(() {
         Navigator.pushNamed(context, '/process',
@@ -39,11 +43,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Future _openGallery() async {
     var picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
-    var imagePathString = "";
     //File('/storage/emulated/0/Download/counter.txt')
     folderManager.tempFolderPath.then((value) {
-      print(value);
-      imagePathString = "${value}${image!.path.split('/').last}";
+      print("Temp Folder Path is $value.");
+      print(
+          "Immediately after taking the image, the image path is ${image!.path}");
+      final imagePathString = "$value${image.path.split('/').last}";
+      print("The image is now migrated to: $imagePathString");
 
       File(image.path).copy(imagePathString);
 
