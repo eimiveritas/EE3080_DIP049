@@ -187,6 +187,10 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
           icon: Icon(Icons.rotate_right),
           label: 'Rotate right',
         ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.text_fields_outlined),
+          label: 'Add text',
+        ),
       ],
       onTap: (int index) {
         switch (index) {
@@ -198,6 +202,8 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
             break;
           case 2:
             rotate(true);
+            break;
+          case 3:
             break;
         }
       },
