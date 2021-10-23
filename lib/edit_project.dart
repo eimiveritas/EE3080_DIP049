@@ -217,13 +217,20 @@ class _EditProjectPageState extends State<EditProjectPage> {
     populate(folderPath).then((value) {
       List<Widget> listings = [];
       File jsonFile = File(arguments["folderPath"] + "/config.json");
-      Map<String, dynamic> jsonFileContent =
-          json.decode(jsonFile.readAsStringSync());
+
       List<String> picture_order = [];
-      if (jsonFileContent.containsKey("picture_order")) {
-        // the order was alr there
-        picture_order = jsonFileContent["picture_order"].cast<String>();
-      } else {
+      bool was_initialized = false;
+      if (jsonFile.existsSync()) {
+        Map<String, dynamic> jsonFileContent =
+            json.decode(jsonFile.readAsStringSync());
+        if (jsonFileContent.containsKey("picture_order")) {
+          // the order was alr there
+          picture_order = jsonFileContent["picture_order"].cast<String>();
+          was_initialized = true;
+        }
+      }
+
+      if (!was_initialized) {
         // new order established
         // print(jsonFileContent);
         for (var i = 0; i < value.length; i++) {
