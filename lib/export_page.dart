@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:ee3080_dip049/folderManager.dart';
+import 'package:firebase_ml_vision/firebase_ml_vision.dart' as ml_vision;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pdf/pdf.dart';
+import 'package:pdf/pdf.dart' as oldpdf;
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share/share.dart';
-import 'package:syncfusion_flutter_pdf/pdf.dart' as syncpdf;
+import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:path/path.dart' as Path;
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
@@ -39,11 +40,100 @@ class _ExportPageState extends State<ExportPage> {
   String _previewImgPath = "";
   bool isImgLoading = true;
 
+  String textMultiImages = "";
+  final RoundedLoadingButtonController _extractTextController =
+      RoundedLoadingButtonController();
+
   @override
   void initState() {
     super.initState();
     setPreviewImg();
     createPdf();
+  }
+
+  shareText(bool inFile) async {
+    Directory dir = Directory(_folderPath);
+
+    File txtFile = File(Path.join(dir.path, "textExtracted.txt"));
+    await txtFile.writeAsString(textMultiImages);
+    print(">>>>>>>>>>>Txt file to share: " + txtFile.path);
+
+    if (inFile) {
+      Share.shareFiles([txtFile.path]);
+    } else {
+      Share.share(textMultiImages);
+    }
+  }
+
+  extractTextFromImages() async {
+    // assume alr extracted since we have only one pdf file to share;
+    if (textMultiImages != "") {
+      return;
+    }
+    Directory imageDir = Directory(_folderPath);
+    await for (var eneity
+        in imageDir.list(recursive: false, followLinks: false)) {
+      var imagePath = eneity.path;
+      print("extrating image: " + imagePath);
+
+      if (imagePath.endsWith(".jpg") ||
+          imagePath.endsWith(".png") ||
+          imagePath.endsWith(".jpeg")) {
+        ml_vision.FirebaseVisionImage visionImage =
+            ml_vision.FirebaseVisionImage.fromFile(File(imagePath));
+        ml_vision.TextRecognizer textRecognizer =
+            ml_vision.FirebaseVision.instance.textRecognizer();
+        ml_vision.VisionText visionText =
+            await textRecognizer.processImage(visionImage);
+
+        for (ml_vision.TextBlock block in visionText.blocks) {
+          for (ml_vision.TextLine line in block.lines) {
+            for (ml_vision.TextElement word in line.elements) {
+              textMultiImages = textMultiImages + word.text + ' ';
+            }
+            textMultiImages = textMultiImages + '\n';
+          }
+        }
+        textMultiImages = textMultiImages + "\n\n";
+
+        textRecognizer.close();
+      }
+    }
+  }
+
+  void _showExtractedText(String text) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Extracted Page'),
+            content: Scrollbar(
+              child: SingleChildScrollView(
+                child: Text(text),
+                physics: BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics()),
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () async {
+                  final File file = File(Path.join(
+                      await folderManager.tempFolderPath,
+                      "/extracted-text.txt"));
+                  file.writeAsString(text);
+                  Share.shareFiles([file.path]);
+                },
+                child: Text('Save'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Close'),
+              ),
+            ],
+          );
+        });
   }
 
   // use the first page of pdf file to be the preview image
@@ -146,8 +236,13 @@ class _ExportPageState extends State<ExportPage> {
     var systemTempDir = Directory(folderPath);
     await for (var entity
         in systemTempDir.list(recursive: false, followLinks: false)) {
-      print("Images: " + entity.path);
-      listOfDir.add(entity.path);
+      var path = entity.path;
+      if (path.endsWith(".jpg") ||
+          path.endsWith(".png") ||
+          path.endsWith(".jpeg")) {
+        print("Images: " + path);
+        listOfDir.add(path);
+      }
     }
     return listOfDir;
   }
@@ -308,19 +403,56 @@ class _ExportPageState extends State<ExportPage> {
               height: 50,
             ),
             Container(
-              width: 150,
-              height: 60,
+              width: 300,
+              height: 45,
               child: ElevatedButton(
                 onPressed: () {
                   print("READY TO SHARE");
                   sharePdf();
+                  Navigator.popUntil(
+                      context, (Route<dynamic> predicate) => predicate.isFirst);
                 },
                 child: Text("SHARE"),
               ),
             ),
-            SizedBox(
-              height: 20,
+
+            const SizedBox(height: 10.0),
+            RoundedLoadingButton(
+              controller: _extractTextController,
+              onPressed: () async {
+                await extractTextFromImages();
+                showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Extracted text'),
+                    content: Expanded(
+                      child: SingleChildScrollView(
+                        child: Text(textMultiImages),
+                      ),
+                    ),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          _extractTextController.reset();
+                          Navigator.pop(context, 'Cancel');
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          await shareText(true);
+                          _extractTextController.reset();
+                          Navigator.pop(context, 'Share');
+                        },
+                        child: const Text('Share'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: const Text("Extract Text"),
             ),
+            SizedBox(height: 30),
             Container(
               width: 150,
               height: 60,
@@ -348,9 +480,9 @@ Future<String> encryptPdfHelper(Map map) async {
   String pdfToEncryptPath = map["pdfToEncryptPath"];
   String password = map["password"];
 
-  final syncpdf.PdfDocument document = syncpdf.PdfDocument(
-      inputBytes: await File(pdfToEncryptPath).readAsBytes());
-  final syncpdf.PdfSecurity security = document.security;
+  final PdfDocument document =
+      PdfDocument(inputBytes: await File(pdfToEncryptPath).readAsBytes());
+  final PdfSecurity security = document.security;
   print(">>>>>>>>>>> inside encryptPdfHelper - document created");
   security.userPassword = password;
 

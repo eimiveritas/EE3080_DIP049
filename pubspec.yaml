@@ -38,6 +38,9 @@ dependencies:
   share: ^2.0.4
   syncfusion_flutter_pdf: ^19.2.62-beta
   rounded_loading_button: ^2.0.9
+  
+  firebase_core: ^1.7.0
+  firebase_ml_vision: ^0.9.10
 
 
 

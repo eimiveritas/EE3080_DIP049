@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "104205316438",
+    "project_id": "ee3080-scanner",
+    "storage_bucket": "ee3080-scanner.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:104205316438:android:00b3a5782c27f3b33de6f7",
+        "android_client_info": {
+          "package_name": "com.example.ee3080_dip049"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "104205316438-mh58orubsp4epqmg63jolg7d3omdubse.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVH5iNi9I9rUB0vrGMhetL25T1IYRhhTA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "104205316438-mh58orubsp4epqmg63jolg7d3omdubse.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
