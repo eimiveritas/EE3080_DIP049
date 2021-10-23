@@ -96,6 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
       for (var i = 0; i < value.length; i++) {
         print("Done");
         listings.add(new Card(
+          key: Key(value[i]),
           child: ListTile(
             title: Text(value[i].split('/').last),
             trailing: Row(
@@ -109,7 +110,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(Icons.edit),
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    _deleteProjWarning(listings, value, i);
+                  },
                   icon: Icon(Icons.delete),
                 )
               ],
@@ -122,6 +125,36 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       print(listings.length.toString());
     });
+  }
+
+  Future<dynamic> _deleteProjWarning(
+      List<Widget> listings, List<String> value, int i) {
+    return showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+                title: Text('Delete Project?'),
+                content: Text('Deleted projects cannot be recovered.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        listings.removeAt(listings
+                            .map((e) => e.key)
+                            .toList()
+                            .indexOf(Key(value[i])));
+                      });
+                      print(i);
+                      Navigator.pop(context);
+                    },
+                    child: Text('DELETE'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text('CANCEL'),
+                  )
+                ]));
   }
 
   Future<void> _showChoiceDialog(BuildContext context) {
