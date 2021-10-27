@@ -145,7 +145,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
       setState(() {
         Navigator.pushNamed(context, '/post_process', arguments: {
           'imagePath': imagePathString,
-          'folderPath': arguments["folderPath"],
+          'projectFolderPath': arguments["projectFolderPath"],
         });
       });
     });
@@ -165,7 +165,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
       setState(() {
         Navigator.pushNamed(context, '/post_process', arguments: {
           'imagePath': imagePathString,
-          'folderPath': arguments["folderPath"],
+          'projectFolderPath': arguments["projectFolderPath"],
         });
       });
     });
@@ -218,7 +218,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
     // <<<<< Note this change for the return type
     populate(folderPath).then((value) {
       List<Widget> listings = [];
-      File jsonFile = File(arguments["folderPath"] + "/config.json");
+      File jsonFile = File(arguments["projectFolderPath"] + "/config.json");
 
       List<String> picture_order = [];
       bool was_initialized = false;
@@ -307,7 +307,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
     // this is called when the class is initialized or called for the first time
     super
         .initState(); //  this is the material super constructor for init state to link your instance initState to the global initState context
-    _getListings(widget.ext_args["folderPath"], widget.ext_args);
+    _getListings(widget.ext_args["projectFolderPath"], widget.ext_args);
   }
 
   @override
@@ -320,9 +320,9 @@ class _EditProjectPageState extends State<EditProjectPage> {
     //  "picture": "https://picsum.photos/250?image=1"
     //});
 
-    String project_title = arguments['folderPath'].split('/').last;
+    String project_title = arguments['projectFolderPath'].split('/').last;
 
-    File jsonFile = File(arguments['folderPath'] + "/config.json");
+    File jsonFile = File(arguments['projectFolderPath'] + "/config.json");
     if (jsonFile.existsSync()) {
       Map<String, dynamic> jsonFileContent =
           json.decode(jsonFile.readAsStringSync());
@@ -353,7 +353,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
             child: Container(
               padding: EdgeInsets.all(10),
               child: Text(
-                'Last saved: 21 Aug 2021 5.00pm ${arguments["folderPath"]}',
+                'Last saved: 21 Aug 2021 5.00pm ${arguments["projectFolderPath"]}',
               ),
             ),
           ),
@@ -379,9 +379,9 @@ class _EditProjectPageState extends State<EditProjectPage> {
                 child: Text("Save"),
                 onPressed: () {
                   debugPrint("Saving to project ${listArray.length} files...");
-                  debugPrint(arguments["folderPath"] + "/config.json");
+                  debugPrint(arguments["projectFolderPath"] + "/config.json");
                   File jsonFile =
-                      File(arguments["folderPath"] + "/config.json");
+                      File(arguments["projectFolderPath"] + "/config.json");
 
                   Map<String, dynamic> jsonFileContent = {};
                   if (jsonFile.existsSync()) {
@@ -468,7 +468,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
-                            ExportPage(arguments['folderPath'])),
+                            ExportPage(arguments['projectFolderPath'])),
                   );
                   // Navigator.pushNamed(
                   //   context,

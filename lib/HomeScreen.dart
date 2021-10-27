@@ -18,25 +18,23 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   File? imageFile;
   FolderManager folderManager = new FolderManager();
-  List<Widget> listArray = [];
+  List<Widget> listOfProjects = [];
 
   Future _openCamera() async {
     var picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.camera);
-    //File('/storage/emulated/0/Download/counter.txt')
-    folderManager.tempFolderPath.then((value) {
-      print("Temp Folder Path is $value.");
-      print(
-          "Immediately after taking the image, the image path is ${image!.path}");
-      final imagePathString = "$value${image.path.split('/').last}";
-      print("The image is now migrated to $imagePathString");
+    _storeImageInTempFolderAndProcessIt(image);
+  }
 
-      File(image.path).copy(imagePathString);
-      //A File consisiting an image is created from the image path. This file is now stored in the imagePathString.
-
+  void _storeImageInTempFolderAndProcessIt(originalImage) {
+    folderManager.tempFolderPath.then((tempFolderPath) {
+      final newPathOfImageTakenStoredInTempFolder =
+          "$tempFolderPath${originalImage!.path.split('/').last}";
+      // a File consisiting an image is created from the image path. This file is now stored in the imagePathString.
+      File(originalImage.path).copy(newPathOfImageTakenStoredInTempFolder);
       setState(() {
         Navigator.pushNamed(context, '/process',
-            arguments: {'imagePath': imagePathString});
+            arguments: {'imagePath': newPathOfImageTakenStoredInTempFolder});
       });
     });
   }
@@ -44,39 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Future _openGallery() async {
     var picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
-    //File('/storage/emulated/0/Download/counter.txt')
-    folderManager.tempFolderPath.then((value) {
-      print("Temp Folder Path is $value.");
-      print(
-          "Immediately after taking the image, the image path is ${image!.path}");
-      final imagePathString = "$value${image.path.split('/').last}";
-      print("The image is now migrated to: $imagePathString");
-
-      File(image.path).copy(imagePathString);
-
-      setState(() {
-        Navigator.pushNamed(context, '/process',
-            arguments: {'imagePath': imagePathString});
-      });
-    });
+    _storeImageInTempFolderAndProcessIt(image);
   }
 
-  void _downloadAndSavePhoto() async {
-    //var url = "https://www.tottus.cl/static/img/productos/20104355_2.jpg";
-    var url = "https://picsum.photos/200/300";
-    var response = await get(Uri.parse(url)); //%%%
-    var documentDirectory = await getApplicationDocumentsDirectory();
-    DateTime now = DateTime.now();
-    String formattedDate = DateFormat('yyyy-MM-dd-kk-mm').format(now);
-    var firstPath = documentDirectory.path + "/$formattedDate";
-    await Directory(firstPath).create(recursive: true);
-    // Name the file, create the file, and save in byte form.
-    var filePathAndName = documentDirectory.path + '/$formattedDate/pic.jpg';
-    File file2 = new File(filePathAndName); //%%%
-    file2.writeAsBytesSync(response.bodyBytes); //%%%
-  }
-
-  Future<List<String>> populate() async {
+  Future<List<String>> getAllProjectsFolderPath() async {
     List<String> listOfDir = [];
     var systemTempDir = await getApplicationDocumentsDirectory();
 
@@ -90,45 +59,45 @@ class _HomeScreenState extends State<HomeScreen> {
     return listOfDir;
   }
 
-  void onGoBack(dynamic value) {
+  void onReturnToHomeScreen(dynamic _) {
     _getListings();
     setState(() {});
   }
 
   void _getListings() {
-    // <<<<< Note this change for the return type
-    populate().then((value) {
-      List<Widget> listings = [];
-      for (var i = 0; i < value.length; i++) {
-        String project_title = value[i].split('/').last;
+    getAllProjectsFolderPath().then((allProjectsFolderPath) {
+      List<Widget> listOfProjectsTemp = [];
+      for (var i = 0; i < allProjectsFolderPath.length; i++) {
+        String projectTitle = allProjectsFolderPath[i].split('/').last;
 
-        File jsonFile = File(value[i] + "/config.json");
-        if (jsonFile.existsSync()) {
+        File configFile = File(allProjectsFolderPath[i] + "/config.json");
+        if (configFile.existsSync()) {
           Map<String, dynamic> jsonFileContent =
-              json.decode(jsonFile.readAsStringSync());
+              json.decode(configFile.readAsStringSync());
           if (jsonFileContent.containsKey("project_title")) {
-            // the order was alr there
-            project_title = jsonFileContent["project_title"];
+            projectTitle = jsonFileContent["project_title"];
           }
         }
 
-        listings.add(new Card(
-          key: Key(value[i]),
+        listOfProjectsTemp.add(new Card(
+          key: Key(allProjectsFolderPath[i]),
           child: ListTile(
-            title: Text(project_title),
+            title: Text(projectTitle),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/edit_page',
-                        arguments: {'folderPath': value[i]}).then(onGoBack);
+                    Navigator.pushNamed(context, '/edit_page', arguments: {
+                      'projectFolderPath': allProjectsFolderPath[i]
+                    }).then(onReturnToHomeScreen);
                   },
                   icon: Icon(Icons.edit),
                 ),
                 IconButton(
                   onPressed: () {
-                    _deleteProjWarning(listings, value, i);
+                    _deleteProjWarning(
+                        listOfProjectsTemp, allProjectsFolderPath, i);
                   },
                   icon: Icon(Icons.delete),
                 )
@@ -138,14 +107,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ));
       }
       setState(() {
-        listArray = listings;
+        listOfProjects = listOfProjectsTemp;
       });
-      print(listings.length.toString());
     });
   }
 
   Future<dynamic> _deleteProjWarning(
-      List<Widget> listings, List<String> value, int i) {
+      List<Widget> listOfProjects, List<String> allProjectsFolderPath, int i) {
     return showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -155,10 +123,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   TextButton(
                     onPressed: () {
                       setState(() {
-                        listings.removeAt(listings
+                        listOfProjects.removeAt(listOfProjects
                             .map((e) => e.key)
                             .toList()
-                            .indexOf(Key(value[i])));
+                            .indexOf(Key(allProjectsFolderPath[i])));
                       });
                       print(i);
                       Navigator.pop(context);
@@ -174,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ]));
   }
 
-  Future<void> _showChoiceDialog(BuildContext context) {
+  Future<void> _addImageShowChoiceDialog(BuildContext context) {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -207,9 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   initState() {
-    // this is called when the class is initialized or called for the first time
-    super
-        .initState(); //  this is the material super constructor for init state to link your instance initState to the global initState context
+    super.initState();
     _getListings();
   }
 
@@ -227,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ListView(
               children: [
                 Column(
-                  children: listArray,
+                  children: listOfProjects,
                 ),
               ],
             )),
@@ -238,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: FloatingActionButton(
                 child: Icon(Icons.photo_camera_outlined),
                 onPressed: () async {
-                  await _showChoiceDialog(context);
+                  await _addImageShowChoiceDialog(context);
                 }),
           ),
         ),

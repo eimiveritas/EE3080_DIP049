@@ -92,9 +92,9 @@ class PostProcessingState extends State<PostProcessing> {
                           onPressed: () {
                             var imagePathString = "";
 
-                            if (arguments.containsKey('folderPath')) {
+                            if (arguments.containsKey('projectFolderPath')) {
                               imagePathString =
-                                  "${arguments['folderPath']}/${arguments['imagePath'].split('/').last}";
+                                  "${arguments['projectFolderPath']}/${arguments['imagePath'].split('/').last}";
 
                               print(imagePathString);
 
@@ -105,7 +105,8 @@ class PostProcessingState extends State<PostProcessing> {
 
                               Navigator.pushNamed(context, '/edit_page',
                                   arguments: {
-                                    'folderPath': arguments['folderPath']
+                                    'projectFolderPath':
+                                        arguments['projectFolderPath']
                                   });
                             } else {
                               folderManager.createFolderWithCurrentDatetimePath
@@ -120,7 +121,7 @@ class PostProcessingState extends State<PostProcessing> {
                                 print(imagePathString);
 
                                 Navigator.pushNamed(context, '/edit_page',
-                                    arguments: {'folderPath': value});
+                                    arguments: {'projectFolderPath': value});
                               });
                             }
                           },

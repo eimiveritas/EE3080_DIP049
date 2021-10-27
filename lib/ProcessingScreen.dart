@@ -269,7 +269,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
         setState(() {
           Navigator.pushReplacementNamed(context, '/edit_page',
-              arguments: {'folderPath': folderPathString});
+              arguments: {'projectFolderPath': folderPathString});
         });
       });
     }
@@ -279,8 +279,8 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
       Map arguments, String fileName, Uint8List imageinBytes) async {
     String editedImagePath = "";
 
-    if (arguments.containsKey('folderPath')) {
-      editedImagePath = "${arguments['folderPath']}/$fileName";
+    if (arguments.containsKey('projectFolderPath')) {
+      editedImagePath = "${arguments['projectFolderPath']}/$fileName";
     } else {
       String value = await folderManager.createFolderWithCurrentDatetimePath;
       print(value);
