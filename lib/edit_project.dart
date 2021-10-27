@@ -8,7 +8,8 @@ import 'package:ee3080_dip049/folderManager.dart';
 import 'package:image_picker/image_picker.dart';
 
 class EditProjectPage extends StatefulWidget {
-  EditProjectPage({Key? key, required this.title}) : super(key: key);
+  EditProjectPage({Key? key, required this.title, required this.ext_args})
+      : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -20,6 +21,7 @@ class EditProjectPage extends StatefulWidget {
   // always marked "final".
 
   final String title;
+  final ext_args;
 
   @override
   _EditProjectPageState createState() => _EditProjectPageState();
@@ -301,6 +303,14 @@ class _EditProjectPageState extends State<EditProjectPage> {
   }
 
   @override
+  initState() {
+    // this is called when the class is initialized or called for the first time
+    super
+        .initState(); //  this is the material super constructor for init state to link your instance initState to the global initState context
+    _getListings(widget.ext_args["folderPath"], widget.ext_args);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
     //if string data
@@ -358,11 +368,6 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   itemBuilder: (BuildContext ctx, index) {
                     return listArray[index];
                   })),
-          TextButton(
-              onPressed: () {
-                _getListings(arguments["folderPath"], arguments);
-              },
-              child: Text("Get")),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[

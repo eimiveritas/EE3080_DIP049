@@ -34,7 +34,9 @@ class MyApp extends StatelessWidget {
         '/': (context) => HomeScreen(),
         '/camera': (context) => CameraPage(),
         '/post_process': (context) => PostProcessing(),
-        '/edit_page': (context) => EditProjectPage(title: "Edit Page"),
+        '/edit_page': (context) => EditProjectPage(
+            title: "Edit Page",
+            ext_args: ModalRoute.of(context)!.settings.arguments),
         '/process': (context) => ProcessingScreen(),
         // '/export_page': (context) => ExportPage(),
       },
