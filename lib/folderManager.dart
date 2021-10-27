@@ -11,6 +11,12 @@ class FolderManager {
     return directory.path;
   }
 
+  Future<String> get app_root async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+  }
+
   Future<String> get tempFolderPath async {
     final path = await _localPath;
     String pathStr = '$path/${Constant.tempFolderSubPath}/';

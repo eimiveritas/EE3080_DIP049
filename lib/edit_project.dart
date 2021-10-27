@@ -309,7 +309,20 @@ class _EditProjectPageState extends State<EditProjectPage> {
     //  "name": "Product",
     //  "picture": "https://picsum.photos/250?image=1"
     //});
-    _controller.text = arguments['folderPath'].split('/').last;
+
+    String project_title = arguments['folderPath'].split('/').last;
+
+    File jsonFile = File(arguments['folderPath'] + "/config.json");
+    if (jsonFile.existsSync()) {
+      Map<String, dynamic> jsonFileContent =
+          json.decode(jsonFile.readAsStringSync());
+      if (jsonFileContent.containsKey("project_title")) {
+        // the order was alr there
+        project_title = jsonFileContent["project_title"];
+      }
+    }
+
+    _controller.text = project_title;
 
     return Scaffold(
       appBar: AppBar(
@@ -393,6 +406,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
                     //picObj.filePath = newPath;
                   }
                   jsonFileContent["picture_order"] = picture_order;
+                  jsonFileContent["project_title"] = _controller.text;
 
                   // for (var i = 0; i < listArray.length; i++) {
                   //   if (i == listArray.length - 1) {

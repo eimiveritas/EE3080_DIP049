@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
@@ -94,11 +95,22 @@ class _HomeScreenState extends State<HomeScreen> {
     populate().then((value) {
       List<Widget> listings = [];
       for (var i = 0; i < value.length; i++) {
-        print("Done");
+        String project_title = value[i].split('/').last;
+
+        File jsonFile = File(value[i] + "/config.json");
+        if (jsonFile.existsSync()) {
+          Map<String, dynamic> jsonFileContent =
+              json.decode(jsonFile.readAsStringSync());
+          if (jsonFileContent.containsKey("project_title")) {
+            // the order was alr there
+            project_title = jsonFileContent["project_title"];
+          }
+        }
+
         listings.add(new Card(
           key: Key(value[i]),
           child: ListTile(
-            title: Text(value[i].split('/').last),
+            title: Text(project_title),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
