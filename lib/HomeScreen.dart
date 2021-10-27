@@ -201,6 +201,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  initState() {
+    // this is called when the class is initialized or called for the first time
+    super
+        .initState(); //  this is the material super constructor for init state to link your instance initState to the global initState context
+    _getListings();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Projects',
@@ -216,16 +224,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 Column(
                   children: listArray,
                 ),
-                TextButton(
-                    onPressed: () {
-                      _getListings();
-                    },
-                    child: Text("Test")),
-                TextButton(
-                    onPressed: () {
-                      _downloadAndSavePhoto();
-                    },
-                    child: Text("Populate"))
               ],
             )),
         floatingActionButton: Container(
