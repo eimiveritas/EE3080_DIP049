@@ -90,6 +90,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return listOfDir;
   }
 
+  void onGoBack(dynamic value) {
+    _getListings();
+    setState(() {});
+  }
+
   void _getListings() {
     // <<<<< Note this change for the return type
     populate().then((value) {
@@ -117,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 IconButton(
                   onPressed: () {
                     Navigator.pushNamed(context, '/edit_page',
-                        arguments: {'folderPath': value[i]});
+                        arguments: {'folderPath': value[i]}).then(onGoBack);
                   },
                   icon: Icon(Icons.edit),
                 ),
