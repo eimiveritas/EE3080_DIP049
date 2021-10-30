@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:ee3080_dip049/folderManager.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 
 class EditProjectPage extends StatefulWidget {
   EditProjectPage({Key? key, required this.extraArgs}) : super(key: key);
@@ -347,7 +348,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
             child: Container(
               padding: EdgeInsets.all(10),
               child: Text(
-                'Last saved: 21 Aug 2021 5.00pm ${arguments["projectFolderPath"]}',
+                'Last saved: ${DateFormat('yyyy-MM-dd – kk:mm').format(jsonFile.lastModifiedSync())}',
               ),
             ),
           ),
