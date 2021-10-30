@@ -105,7 +105,7 @@ class PictureObj extends StatelessWidget {
 }
 
 class _EditProjectPageState extends State<EditProjectPage> {
-  List<Widget> gridOfPics = [];
+  List<Widget> gridOfPicsWithAddNewPicBtn = [];
 
   File? imageFile;
   FolderManager folderManager = new FolderManager();
@@ -225,10 +225,10 @@ class _EditProjectPageState extends State<EditProjectPage> {
       for (var i = 0; i < pictureOrder.length; i++) {
         File picFile = File(pictureOrder[i]);
         if (picFile.existsSync()) {
-        PictureObj pic = new PictureObj(
-            picIndex: i,
+          PictureObj pic = new PictureObj(
+              picIndex: i,
               filePath: pictureOrder[i],
-            removePage: (pageIndex) {
+              removePage: (pageIndex) {
                 bool dismissedAlready = false;
                 showDialog(
                     context: context,
@@ -239,8 +239,9 @@ class _EditProjectPageState extends State<EditProjectPage> {
                             actions: [
                               TextButton(
                                 onPressed: () {
-              setState(() {
-                                    gridOfPics.removeAt(pageIndex);
+                                  setState(() {
+                                    gridOfPicsWithAddNewPicBtn
+                                        .removeAt(pageIndex);
                                     picFile.deleteSync();
                                   });
                                   Fluttertoast.showToast(
@@ -265,18 +266,21 @@ class _EditProjectPageState extends State<EditProjectPage> {
                     Fluttertoast.showToast(
                         msg: "Picture NOT deleted...", fontSize: 16.0);
                   }
+                });
+              },
+              swapPage: (source, dest) {
+                var tempObj = gridOfPicsWithAddNewPicBtn[source];
+                (gridOfPicsWithAddNewPicBtn[source] as PictureObj).picIndex =
+                    dest;
+                (gridOfPicsWithAddNewPicBtn[dest] as PictureObj).picIndex =
+                    source;
+                gridOfPicsWithAddNewPicBtn[source] =
+                    gridOfPicsWithAddNewPicBtn[dest];
+                gridOfPicsWithAddNewPicBtn[dest] = tempObj;
+                setState(() {
+                  gridOfPicsWithAddNewPicBtn = gridOfPicsWithAddNewPicBtn;
+                });
               });
-            },
-            swapPage: (source, dest) {
-                var tempObj = gridOfPics[source];
-                (gridOfPics[source] as PictureObj).picIndex = dest;
-                (gridOfPics[dest] as PictureObj).picIndex = source;
-                gridOfPics[source] = gridOfPics[dest];
-                gridOfPics[dest] = tempObj;
-              setState(() {
-                  gridOfPics = gridOfPics;
-              });
-            });
           gridOfPicsTemp.add(pic);
         }
       }
@@ -302,7 +306,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
       gridOfPicsTemp.add(newPicButton);
 
       setState(() {
-        gridOfPics = gridOfPicsTemp;
+        gridOfPicsWithAddNewPicBtn = gridOfPicsTemp;
       });
     });
   }
@@ -319,14 +323,15 @@ class _EditProjectPageState extends State<EditProjectPage> {
     final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
 
     String projectTitle = arguments['projectFolderPath'].split('/').last;
-
+    Map<String, dynamic> jsonFileContent = {};
     File jsonFile = File(arguments['projectFolderPath'] + "/config.json");
     if (jsonFile.existsSync()) {
-      Map<String, dynamic> jsonFileContent =
-          json.decode(jsonFile.readAsStringSync());
+      jsonFileContent = json.decode(jsonFile.readAsStringSync());
       if (jsonFileContent.containsKey("project_title")) {
         projectTitle = jsonFileContent["project_title"];
       }
+    } else {
+      jsonFile.writeAsStringSync(json.encode(jsonFileContent));
     }
 
     _controller.text = projectTitle;
@@ -359,9 +364,9 @@ class _EditProjectPageState extends State<EditProjectPage> {
                       childAspectRatio: 3 / 2,
                       crossAxisSpacing: 20,
                       mainAxisSpacing: 20),
-                  itemCount: gridOfPics.length,
+                  itemCount: gridOfPicsWithAddNewPicBtn.length,
                   itemBuilder: (BuildContext ctx, index) {
-                    return gridOfPics[index];
+                    return gridOfPicsWithAddNewPicBtn[index];
                   })),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -373,78 +378,25 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   child: TextButton(
                 child: Text("Save"),
                 onPressed: () {
-                  debugPrint("Saving to project ${gridOfPics.length} files...");
-                  debugPrint(arguments["projectFolderPath"] + "/config.json");
                   File jsonFile =
                       File(arguments["projectFolderPath"] + "/config.json");
 
                   Map<String, dynamic> jsonFileContent = {};
                   if (jsonFile.existsSync()) {
-                    Map<String, dynamic> jsonFileContent =
-                        json.decode(jsonFile.readAsStringSync());
-                    print(jsonFileContent);
+                    jsonFileContent = json.decode(jsonFile.readAsStringSync());
                   }
 
-                  List<String> picture_order = [];
-                  for (var i = 0; i < gridOfPics.length; i++) {
-                    if (i == gridOfPics.length - 1) {
+                  List<String> pictureOrder = [];
+                  for (var i = 0; i < gridOfPicsWithAddNewPicBtn.length; i++) {
+                    if (i == gridOfPicsWithAddNewPicBtn.length - 1) {
+                      // -1 cuz of the add new pic button
                       continue;
                     }
-                    print("jiz");
-                    var picObj = (gridOfPics[i] as PictureObj);
-                    print(picObj.filePath);
-                    picture_order.add(picObj.filePath);
-                    //File file = File(picObj.filePath);
-                    //String newFileName = "Page ${picObj.picIndex}.jpg";
-                    //var path = file.path;
-                    //var lastSeparator =
-                    //    path.lastIndexOf(Platform.pathSeparator);
-                    //var newPath =
-                    //    path.substring(0, lastSeparator + 1) + newFileName;
-                    //print("From ${picObj.filePath} to $newPath");
-                    //file.rename(newPath);
-                    //picObj.filePath = newPath;
+                    var picObj = (gridOfPicsWithAddNewPicBtn[i] as PictureObj);
+                    pictureOrder.add(picObj.filePath);
                   }
-                  jsonFileContent["picture_order"] = picture_order;
+                  jsonFileContent["picture_order"] = pictureOrder;
                   jsonFileContent["project_title"] = _controller.text;
-
-                  // for (var i = 0; i < listArray.length; i++) {
-                  //   if (i == listArray.length - 1) {
-                  //     continue;
-                  //   }
-                  //   print("jiz");
-                  //   var picObj = (listArray[i] as PictureObj);
-                  //   File file = File(picObj.filePath);
-                  //   String newFileName = "Page xxxxxx ${picObj.picIndex}.jpg";
-                  //   var path = file.path;
-                  //   var lastSeparator =
-                  //       path.lastIndexOf(Platform.pathSeparator);
-                  //   var newPath =
-                  //       path.substring(0, lastSeparator + 1) + newFileName;
-                  //   print("From ${picObj.filePath} to $newPath");
-                  //   file.rename(newPath);
-                  //   picObj.filePath = newPath;
-                  // }
-
-                  // for (var i = 0; i < listArray.length; i++) {
-                  //   if (i == listArray.length - 1) {
-                  //     continue;
-                  //   }
-                  //   print("jiz");
-                  //   var picObj = (listArray[i] as PictureObj);
-                  //   print(picObj.filePath);
-                  //   File file = File(picObj.filePath);
-                  //   String newFileName = "Page ${picObj.picIndex}.jpg";
-                  //   var path = file.path;
-                  //   var lastSeparator =
-                  //       path.lastIndexOf(Platform.pathSeparator);
-                  //   var newPath =
-                  //       path.substring(0, lastSeparator + 1) + newFileName;
-                  //   print("From ${picObj.filePath} to $newPath");
-                  //   file.rename(newPath);
-                  //   picObj.filePath = newPath;
-                  // }
-
                   jsonFile.writeAsStringSync(json.encode(jsonFileContent));
                 },
                 style: TextButton.styleFrom(
