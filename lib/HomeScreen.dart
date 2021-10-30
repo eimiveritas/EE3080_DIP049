@@ -4,9 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:ee3080_dip049/folderManager.dart';
-import 'package:http/http.dart' show get;
 import 'package:path_provider/path_provider.dart';
-import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -60,11 +58,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void onReturnToHomeScreen(dynamic _) {
-    _getListings();
+    _generateListOfProjects();
     setState(() {});
   }
 
-  void _getListings() {
+  void _generateListOfProjects() {
     getAllProjectsFolderPath().then((allProjectsFolderPath) {
       List<Widget> listOfProjectsTemp = [];
       for (var i = 0; i < allProjectsFolderPath.length; i++) {
@@ -176,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   initState() {
     super.initState();
-    _getListings();
+    _generateListOfProjects();
   }
 
   @override
