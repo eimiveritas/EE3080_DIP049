@@ -3,37 +3,16 @@ import 'dart:io';
 
 import 'package:ee3080_dip049/export_page.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:ee3080_dip049/folderManager.dart';
 import 'package:image_picker/image_picker.dart';
 
 class EditProjectPage extends StatefulWidget {
-  EditProjectPage({Key? key, required this.title, required this.ext_args})
-      : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-  final ext_args;
+  EditProjectPage({Key? key, required this.extraArgs}) : super(key: key);
+  final extraArgs;
 
   @override
   _EditProjectPageState createState() => _EditProjectPageState();
 }
-
-List<Map> data = List.generate(
-    5,
-    (index) => {
-          "id": index,
-          "name": "Page ${index + 1}",
-          "picture": "https://picsum.photos/250?image=$index"
-        }).toList();
 
 class PictureObj extends StatelessWidget {
   PictureObj(
@@ -114,7 +93,7 @@ class PictureObj extends StatelessWidget {
       },
       onWillAccept: (data) => true,
       onAccept: (data) {
-        print("Transferring from ${data} to ${picIndex.toString()}");
+        print("Transferring from $data to ${picIndex.toString()}");
         swapPage(int.parse(data), picIndex);
       },
       onLeave: (data) {},
@@ -202,47 +181,41 @@ class _EditProjectPageState extends State<EditProjectPage> {
         });
   }
 
-  Future<List<String>> populate(folderPath) async {
-    List<String> listOfDir = [];
-    var systemTempDir = Directory(folderPath);
-    await for (var entity
-        in systemTempDir.list(recursive: false, followLinks: false)) {
-      print(entity.path);
-      listOfDir.add(entity.path);
+  Future<List<String>> getAllPicturesPath(projectFolderPath) async {
+    List<String> listOfPicsPath = [];
+    var projectFolder = Directory(projectFolderPath);
+    await for (var pic
+        in projectFolder.list(recursive: false, followLinks: false)) {
+      listOfPicsPath.add(pic.path);
     }
-    listOfDir.sort();
-    return listOfDir;
+    listOfPicsPath.sort();
+    return listOfPicsPath;
   }
 
-  void _getListings(folderPath, arguments) {
-    // <<<<< Note this change for the return type
-    populate(folderPath).then((value) {
+  void _generateGridOfPics(projectFolderPath, arguments) {
+    getAllPicturesPath(projectFolderPath).then((listOfPicsPath) {
       List<Widget> listings = [];
-      File jsonFile = File(arguments["projectFolderPath"] + "/config.json");
+      File configFile = File(arguments["projectFolderPath"] + "/config.json");
+      List<String> pictureOrder = [];
+      bool wasInitialized = false;
 
-      List<String> picture_order = [];
-      bool was_initialized = false;
-      if (jsonFile.existsSync()) {
+      // check if there is already an order
+      if (configFile.existsSync()) {
         Map<String, dynamic> jsonFileContent =
-            json.decode(jsonFile.readAsStringSync());
+            json.decode(configFile.readAsStringSync());
         if (jsonFileContent.containsKey("picture_order")) {
-          // the order was alr there
-          picture_order = jsonFileContent["picture_order"].cast<String>();
-          was_initialized = true;
+          pictureOrder = jsonFileContent["picture_order"].cast<String>();
+          wasInitialized = true;
         }
       }
 
-      if (!was_initialized) {
-        // new order established
-        // print(jsonFileContent);
-        for (var i = 0; i < value.length; i++) {
-          print("Done");
-
-          String filename = value[i].split("/").last;
+      // so that config.json doesnt show up in the grid
+      if (!wasInitialized) {
+        for (var i = 0; i < listOfPicsPath.length; i++) {
+          String filename = listOfPicsPath[i].split("/").last;
           List<String> reservedFiles = ["config.json"];
-
           if (!reservedFiles.contains(filename)) {
-            picture_order.add(value[i]);
+            pictureOrder.add(listOfPicsPath[i]);
           }
         }
       }
@@ -304,21 +277,14 @@ class _EditProjectPageState extends State<EditProjectPage> {
 
   @override
   initState() {
-    // this is called when the class is initialized or called for the first time
-    super
-        .initState(); //  this is the material super constructor for init state to link your instance initState to the global initState context
-    _getListings(widget.ext_args["projectFolderPath"], widget.ext_args);
+    super.initState();
+    _generateGridOfPics(
+        widget.extraArgs["projectFolderPath"], widget.extraArgs);
   }
 
   @override
   Widget build(BuildContext context) {
     final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
-    //if string data
-    //data.add({
-    //  "id": data.length,
-    //  "name": "Product",
-    //  "picture": "https://picsum.photos/250?image=1"
-    //});
 
     String project_title = arguments['projectFolderPath'].split('/').last;
 
@@ -336,9 +302,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
 
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the EditProjectPage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text("Edit Project"),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
