@@ -46,9 +46,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<List<String>> getAllProjectsFolderPath() async {
     List<String> listOfDirPath = [];
     var appDocsDir = await getApplicationDocumentsDirectory();
-
+    var projectRoot = Directory("${appDocsDir.path}/Projects");
+    projectRoot.createSync();
     await for (var dir
-        in appDocsDir.list(recursive: false, followLinks: false)) {
+        in projectRoot.list(recursive: false, followLinks: false)) {
       listOfDirPath.add(dir.path);
     }
     return listOfDirPath;
@@ -64,42 +65,44 @@ class _HomeScreenState extends State<HomeScreen> {
       List<Widget> listOfProjectsTemp = [];
       for (var i = 0; i < allProjectsFolderPath.length; i++) {
         String projectTitle = allProjectsFolderPath[i].split('/').last;
-
-        File configFile = File(allProjectsFolderPath[i] + "/config.json");
-        if (configFile.existsSync()) {
-          Map<String, dynamic> jsonFileContent =
-              json.decode(configFile.readAsStringSync());
-          if (jsonFileContent.containsKey("project_title")) {
-            projectTitle = jsonFileContent["project_title"];
+        List<String> protectedFolders = ['flutter_assets', 'res_timestamp'];
+        if (projectTitle != protectedFolders[0]) {
+          File configFile = File(allProjectsFolderPath[i] + "/config.json");
+          if (configFile.existsSync()) {
+            Map<String, dynamic> jsonFileContent =
+                json.decode(configFile.readAsStringSync());
+            if (jsonFileContent.containsKey("project_title")) {
+              projectTitle = jsonFileContent["project_title"];
+            }
           }
-        }
 
-        listOfProjectsTemp.add(new Card(
-          key: Key(allProjectsFolderPath[i]),
-          child: ListTile(
-            title: Text(projectTitle),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/edit_page', arguments: {
-                      'projectFolderPath': allProjectsFolderPath[i]
-                    }).then(onReturnToHomeScreen);
-                  },
-                  icon: Icon(Icons.edit),
-                ),
-                IconButton(
-                  onPressed: () {
-                    _deleteProjWarning(
-                        listOfProjectsTemp, allProjectsFolderPath, i);
-                  },
-                  icon: Icon(Icons.delete),
-                )
-              ],
+          listOfProjectsTemp.add(new Card(
+            key: Key(allProjectsFolderPath[i]),
+            child: ListTile(
+              title: Text(projectTitle),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/edit_page', arguments: {
+                        'projectFolderPath': allProjectsFolderPath[i]
+                      }).then(onReturnToHomeScreen);
+                    },
+                    icon: Icon(Icons.edit),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      _deleteProjWarning(
+                          listOfProjectsTemp, allProjectsFolderPath, i);
+                    },
+                    icon: Icon(Icons.delete),
+                  )
+                ],
+              ),
             ),
-          ),
-        ));
+          ));
+        }
       }
       setState(() {
         listOfProjects = listOfProjectsTemp;

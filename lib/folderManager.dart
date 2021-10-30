@@ -11,7 +11,7 @@ class FolderManager {
     return directory.path;
   }
 
-  Future<String> get app_root async {
+  Future<String> get appRoot async {
     final directory = await getApplicationDocumentsDirectory();
 
     return directory.path;
@@ -25,10 +25,12 @@ class FolderManager {
   }
 
   Future<String> get createFolderWithCurrentDatetimePath async {
-    final path = await _localPath;
+    final appDocsDirPath = await _localPath;
+    var projectRoot = Directory("$appDocsDirPath/Projects");
+    projectRoot.createSync();
     DateTime now = DateTime.now();
     String formattedDate = DateFormat('yyyy-MM-dd-kk-mm').format(now);
-    var firstPath = path + "/$formattedDate/";
+    var firstPath = projectRoot.path + "/$formattedDate/";
     await Directory(firstPath).create(recursive: true);
     // Name the file, create the file, and save in byte form.
     return firstPath;
