@@ -5,6 +5,7 @@ import 'package:ee3080_dip049/export_page.dart';
 import 'package:flutter/material.dart';
 import 'package:ee3080_dip049/folderManager.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class EditProjectPage extends StatefulWidget {
   EditProjectPage({Key? key, required this.extraArgs}) : super(key: key);
@@ -103,7 +104,7 @@ class PictureObj extends StatelessWidget {
 }
 
 class _EditProjectPageState extends State<EditProjectPage> {
-  List<Widget> listArray = [];
+  List<Widget> gridOfPics = [];
 
   File? imageFile;
   FolderManager folderManager = new FolderManager();
@@ -194,7 +195,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
 
   void _generateGridOfPics(projectFolderPath, arguments) {
     getAllPicturesPath(projectFolderPath).then((listOfPicsPath) {
-      List<Widget> listings = [];
+      List<Widget> gridOfPicsTemp = [];
       File configFile = File(arguments["projectFolderPath"] + "/config.json");
       List<String> pictureOrder = [];
       bool wasInitialized = false;
@@ -220,41 +221,71 @@ class _EditProjectPageState extends State<EditProjectPage> {
         }
       }
 
-      for (var i = 0; i < picture_order.length; i++) {
+      for (var i = 0; i < pictureOrder.length; i++) {
+        File picFile = File(pictureOrder[i]);
+        if (picFile.existsSync()) {
         PictureObj pic = new PictureObj(
             picIndex: i,
-            filePath: picture_order[i],
+              filePath: pictureOrder[i],
             removePage: (pageIndex) {
+                bool dismissedAlready = false;
+                showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                            title: Text('Delete Picture?'),
+                            content:
+                                Text('Deleted images cannot be recovered.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
               setState(() {
-                listArray.removeAt(pageIndex);
+                                    gridOfPics.removeAt(pageIndex);
+                                    picFile.deleteSync();
+                                  });
+                                  Fluttertoast.showToast(
+                                      msg: "Pictured deleted...",
+                                      fontSize: 16.0);
+                                  Navigator.pop(context);
+                                },
+                                child: Text('DELETE'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  dismissedAlready = true;
+                                  Fluttertoast.showToast(
+                                      msg: "Picture NOT deleted...",
+                                      fontSize: 16.0);
+                                  Navigator.pop(context);
+                                },
+                                child: Text('CANCEL'),
+                              )
+                            ])).then((_) {
+                  if (!dismissedAlready) {
+                    Fluttertoast.showToast(
+                        msg: "Picture NOT deleted...", fontSize: 16.0);
+                  }
               });
             },
             swapPage: (source, dest) {
-              var tempObj = listArray[source];
-              print("S ${(listArray[source] as PictureObj).picIndex}");
-              (listArray[source] as PictureObj).picIndex = dest;
-              print("To ${(listArray[source] as PictureObj).picIndex}");
-
-              print("D ${(listArray[dest] as PictureObj).picIndex}");
-              (listArray[dest] as PictureObj).picIndex = source;
-              print("To ${(listArray[dest] as PictureObj).picIndex}");
-
-              listArray[source] = listArray[dest];
-              listArray[dest] = tempObj;
+                var tempObj = gridOfPics[source];
+                (gridOfPics[source] as PictureObj).picIndex = dest;
+                (gridOfPics[dest] as PictureObj).picIndex = source;
+                gridOfPics[source] = gridOfPics[dest];
+                gridOfPics[dest] = tempObj;
               setState(() {
-                listArray = listArray;
+                  gridOfPics = gridOfPics;
               });
             });
-        listings.add(pic);
+          gridOfPicsTemp.add(pic);
+        }
       }
 
-      listings.add(new Stack(
+      var newPicButton = new Stack(
         children: <Widget>[
           Material(
               color: Colors.amber,
               child: InkWell(
                 onTap: () async {
-                  debugPrint("You clicked on page!");
                   await _showChoiceDialog(context, arguments);
                 },
                 child: ClipRect(
@@ -266,12 +297,12 @@ class _EditProjectPageState extends State<EditProjectPage> {
                 ),
               )),
         ],
-      ));
+      );
+      gridOfPicsTemp.add(newPicButton);
 
       setState(() {
-        listArray = listings;
+        gridOfPics = gridOfPicsTemp;
       });
-      print(listings.length.toString());
     });
   }
 
@@ -286,19 +317,18 @@ class _EditProjectPageState extends State<EditProjectPage> {
   Widget build(BuildContext context) {
     final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
 
-    String project_title = arguments['projectFolderPath'].split('/').last;
+    String projectTitle = arguments['projectFolderPath'].split('/').last;
 
     File jsonFile = File(arguments['projectFolderPath'] + "/config.json");
     if (jsonFile.existsSync()) {
       Map<String, dynamic> jsonFileContent =
           json.decode(jsonFile.readAsStringSync());
       if (jsonFileContent.containsKey("project_title")) {
-        // the order was alr there
-        project_title = jsonFileContent["project_title"];
+        projectTitle = jsonFileContent["project_title"];
       }
     }
 
-    _controller.text = project_title;
+    _controller.text = projectTitle;
 
     return Scaffold(
       appBar: AppBar(
@@ -328,9 +358,9 @@ class _EditProjectPageState extends State<EditProjectPage> {
                       childAspectRatio: 3 / 2,
                       crossAxisSpacing: 20,
                       mainAxisSpacing: 20),
-                  itemCount: listArray.length,
+                  itemCount: gridOfPics.length,
                   itemBuilder: (BuildContext ctx, index) {
-                    return listArray[index];
+                    return gridOfPics[index];
                   })),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -342,7 +372,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   child: TextButton(
                 child: Text("Save"),
                 onPressed: () {
-                  debugPrint("Saving to project ${listArray.length} files...");
+                  debugPrint("Saving to project ${gridOfPics.length} files...");
                   debugPrint(arguments["projectFolderPath"] + "/config.json");
                   File jsonFile =
                       File(arguments["projectFolderPath"] + "/config.json");
@@ -355,12 +385,12 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   }
 
                   List<String> picture_order = [];
-                  for (var i = 0; i < listArray.length; i++) {
-                    if (i == listArray.length - 1) {
+                  for (var i = 0; i < gridOfPics.length; i++) {
+                    if (i == gridOfPics.length - 1) {
                       continue;
                     }
                     print("jiz");
-                    var picObj = (listArray[i] as PictureObj);
+                    var picObj = (gridOfPics[i] as PictureObj);
                     print(picObj.filePath);
                     picture_order.add(picObj.filePath);
                     //File file = File(picObj.filePath);

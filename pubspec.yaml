@@ -41,6 +41,7 @@ dependencies:
   
   firebase_core: ^1.7.0
   firebase_ml_vision: ^0.9.10
+  fluttertoast: ^8.0.8
 
 
 
