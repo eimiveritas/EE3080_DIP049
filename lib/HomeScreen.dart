@@ -44,17 +44,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<List<String>> getAllProjectsFolderPath() async {
-    List<String> listOfDir = [];
-    var systemTempDir = await getApplicationDocumentsDirectory();
+    List<String> listOfDirPath = [];
+    var appDocsDir = await getApplicationDocumentsDirectory();
 
-    // List directory contents, recursing into sub-directories,
-    // but not following symbolic links.
-    await for (var entity
-        in systemTempDir.list(recursive: false, followLinks: false)) {
-      print(entity.path);
-      listOfDir.add(entity.path);
+    await for (var dir
+        in appDocsDir.list(recursive: false, followLinks: false)) {
+      listOfDirPath.add(dir.path);
     }
-    return listOfDir;
+    return listOfDirPath;
   }
 
   void onReturnToHomeScreen(dynamic _) {
