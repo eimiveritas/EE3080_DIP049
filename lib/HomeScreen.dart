@@ -122,6 +122,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             .map((e) => e.key)
                             .toList()
                             .indexOf(Key(allProjectsFolderPath[i])));
+
+                        Directory deleteDir =
+                            Directory(allProjectsFolderPath[i]);
+                        deleteDir.deleteSync(recursive: true);
+                        allProjectsFolderPath.removeAt(i);
                       });
                       print(i);
                       Navigator.pop(context);
