@@ -124,7 +124,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
       File(image.path).copy(imagePathString);
 
       setState(() {
-        Navigator.pushNamed(context, '/post_process', arguments: {
+        Navigator.pushNamed(context, '/process', arguments: {
           'imagePath': imagePathString,
           'projectFolderPath': arguments["projectFolderPath"],
         });
@@ -144,7 +144,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
       File(image.path).copy(imagePathString);
 
       setState(() {
-        Navigator.pushNamed(context, '/post_process', arguments: {
+        Navigator.pushNamed(context, '/process', arguments: {
           'imagePath': imagePathString,
           'projectFolderPath': arguments["projectFolderPath"],
         });

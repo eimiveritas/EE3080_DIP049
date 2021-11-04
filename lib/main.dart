@@ -1,3 +1,4 @@
+import 'package:ee3080_dip049/DrawingScreen.dart';
 import 'package:flutter/material.dart';
 import 'HomeScreen.dart';
 import 'CameraPage.dart';
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
         '/edit_page': (context) => EditProjectPage(
             extraArgs: ModalRoute.of(context)!.settings.arguments),
         '/process': (context) => ProcessingScreen(),
+        '/draw': (context) => DrawingScreen(),
         // '/export_page': (context) => ExportPage(),
       },
     );

@@ -1,15 +1,12 @@
-import 'package:advance_pdf_viewer/advance_pdf_viewer.dart';
-import 'package:ee3080_dip049/edit_project.dart';
 import 'package:ee3080_dip049/folderManager.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:image_editor/image_editor.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:oktoast/oktoast.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
+
 import 'package:uuid/uuid.dart';
 
 class ProcessingScreen extends StatefulWidget {
@@ -109,7 +106,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
           IconButton(
               icon: Icon(Icons.check),
               onPressed: () async {
-                await done(arguments);
+                await _doneToEdit(arguments);
               }),
         ],
       ),
@@ -144,7 +141,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
               ),
             ],
           )),
-      bottomNavigationBar: _buildFunctions(),
+      bottomNavigationBar: _buildFunctions(arguments),
     ));
   }
 
@@ -172,7 +169,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
                     ))));
   }
 
-  Widget _buildFunctions() {
+  Widget _buildFunctions(Map arg) {
     return BottomNavigationBar(
       items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
@@ -188,7 +185,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
           label: 'Rotate right',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.text_fields_outlined),
+          icon: Icon(Icons.edit),
           label: 'Add text',
         ),
       ],
@@ -204,6 +201,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
             rotate(true);
             break;
           case 3:
+            _askDraw(arg);
             break;
         }
       },
@@ -213,7 +211,34 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     );
   }
 
-  Future<void> done(Map arg, [bool test = false]) async {
+  Future<void> _askDraw(Map arg) async {
+    return showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return ClipRRect(
+            child: AlertDialog(
+                title: Text("Proceeding to a new page to Draw"),
+                content: Text(
+                    "Ensure that cropping, color adjustments, and rotation are finalised!"),
+                actionsAlignment: MainAxisAlignment.spaceEvenly,
+                actions: <Widget>[
+                  TextButton(
+                      child: Text("Proceed"),
+                      onPressed: () async {
+                        await _doneToDraw(arg);
+                      }),
+                  TextButton(
+                      child: Text("Stay"),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      })
+                ]),
+          );
+        });
+  }
+
+  Future<void> _doneToDraw(Map arg) async {
     final ExtendedImageEditorState? state = editorKey.currentState;
     if (state == null) {
       return;
@@ -268,8 +293,73 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
             _getFolderfromImagePath(editedImagePathString);
 
         setState(() {
-          Navigator.pushReplacementNamed(context, '/edit_page',
-              arguments: {'projectFolderPath': folderPathString});
+          Navigator.pushReplacementNamed(context, '/draw', arguments: {
+            'projectFolderPath': folderPathString,
+            'editedImagePath': editedImagePathString
+          });
+        });
+      });
+    }
+  }
+
+  Future<void> _doneToEdit(Map arg) async {
+    final ExtendedImageEditorState? state = editorKey.currentState;
+    if (state == null) {
+      return;
+    }
+    final Rect? rect = state.getCropRect();
+    if (rect == null) {
+      showToast('The crop rect is null.');
+      return;
+    }
+    final EditActionDetails action = state.editAction!;
+    final double radian = action.rotateAngle;
+
+    final bool flipHorizontal = action.flipY;
+    final bool flipVertical = action.flipX;
+    final Uint8List? img = state.rawImageData;
+
+    if (img == null) {
+      showToast('The img is null.');
+      return;
+    }
+
+    final ImageEditorOption option = ImageEditorOption();
+
+    option.addOption(ClipOption.fromRect(rect));
+    option.addOption(
+        FlipOption(horizontal: flipHorizontal, vertical: flipVertical));
+    if (action.hasRotateAngle) {
+      option.addOption(RotateOption(radian.toInt()));
+    }
+
+    option.addOption(ColorOption.saturation(sat));
+    option.addOption(ColorOption.brightness(bright + 1));
+    option.addOption(ColorOption.contrast(con));
+
+    option.outputFormat = const OutputFormat.png(88);
+
+    final Uint8List? result = await ImageEditor.editImage(
+      image: img,
+      imageEditorOption: option,
+    );
+
+    var uuid = Uuid();
+    final fileName = uuid.v1() + ".png";
+    print("File name is $fileName");
+
+    if (result != null) {
+      _storingInFolder(arg, fileName, result).then((editedImagePathString) {
+        print(
+            "Edited image path after storing function: $editedImagePathString");
+
+        String folderPathString =
+            _getFolderfromImagePath(editedImagePathString);
+
+        setState(() {
+          Navigator.pushReplacementNamed(context, '/edit_page', arguments: {
+            'projectFolderPath': folderPathString,
+          });
         });
       });
     }
