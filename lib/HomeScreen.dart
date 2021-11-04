@@ -157,16 +157,16 @@ class _HomeScreenState extends State<HomeScreen> {
               content: SingleChildScrollView(
                 child: ListBody(
                   children: [
-                    TextButton(
+                    GestureDetector(
                       child: Text('Camera'),
-                      onPressed: () {
+                      onTap: () {
                         _openCamera();
                       },
                     ),
                     Padding(padding: EdgeInsets.all(8.0)),
-                    TextButton(
+                    GestureDetector(
                       child: Text('Gallery'),
-                      onPressed: () {
+                      onTap: () {
                         _openGallery();
                       },
                     ),
