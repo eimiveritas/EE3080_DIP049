@@ -428,6 +428,27 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   //       builder: (context) =>
                   //           ExportPage(arguments['projectFolderPath'])),
                   // );
+                  File jsonFile =
+                      File(arguments["projectFolderPath"] + "/config.json");
+
+                  Map<String, dynamic> jsonFileContent = {};
+                  if (jsonFile.existsSync()) {
+                    jsonFileContent = json.decode(jsonFile.readAsStringSync());
+                  }
+
+                  List<String> pictureOrder = [];
+                  for (var i = 0; i < gridOfPicsWithAddNewPicBtn.length; i++) {
+                    if (i == gridOfPicsWithAddNewPicBtn.length - 1) {
+                      // -1 cuz of the add new pic button
+                      continue;
+                    }
+                    var picObj = (gridOfPicsWithAddNewPicBtn[i] as PictureObj);
+                    pictureOrder.add(picObj.filePath);
+                  }
+                  jsonFileContent["picture_order"] = pictureOrder;
+                  jsonFileContent["project_title"] = _controller.text;
+                  jsonFile.writeAsStringSync(json.encode(jsonFileContent));
+                  Fluttertoast.showToast(msg: "Exporting...", fontSize: 16.0);
                   Navigator.pushNamed(
                     context,
                     '/export_page',
