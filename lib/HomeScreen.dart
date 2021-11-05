@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:ee3080_dip049/folderManager.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -150,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-              title: Text('Launch App'),
+              title: Text('Select Source'),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(15))),
               elevation: 24.0,
@@ -184,6 +185,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
+
+    if (arguments != null) {
+      if (arguments.containsKey("saved")) {
+        Fluttertoast.showToast(msg: "Project Saved...", fontSize: 16.0);
+      }
+    }
+
     return MaterialApp(
       title: 'Projects',
       home: Scaffold(
