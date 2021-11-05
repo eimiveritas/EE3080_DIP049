@@ -355,7 +355,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
         String folderPathString =
             _getFolderfromImagePath(editedImagePathString);
-
+        new FileImage(File(editedImagePathString)).evict();
         setState(() {
           Navigator.pushReplacementNamed(context, '/edit_page', arguments: {
             'projectFolderPath': folderPathString,
@@ -370,7 +370,8 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     String editedImagePath = "";
 
     if (arguments.containsKey('projectFolderPath')) {
-      editedImagePath = "${arguments['projectFolderPath']}/$fileName";
+      //editedImagePath = "${arguments['projectFolderPath']}/$fileName";
+      editedImagePath = "${arguments['imagePath']}";
     } else {
       String value = await folderManager.createFolderWithCurrentDatetimePath;
       print(value);
