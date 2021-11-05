@@ -51,7 +51,7 @@ class _ExportPageState extends State<ExportPage> {
   @override
   void initState() {
     super.initState();
-    print("inside initState: " + _folderPath);
+    // print("inside initState: " + _folderPath);
     setPreviewImg();
     setTitle();
     createPdf();
@@ -62,7 +62,7 @@ class _ExportPageState extends State<ExportPage> {
 
     File txtFile = File(Path.join(dir.path, "textExtracted.txt"));
     await txtFile.writeAsString(_textMultiImages);
-    print(">>>>>>>>>>>Txt file to share: " + txtFile.path);
+    // print(">>>>>>>>>>>Txt file to share: " + txtFile.path);
 
     if (inFile) {
       Share.shareFiles([txtFile.path]);
@@ -80,7 +80,7 @@ class _ExportPageState extends State<ExportPage> {
     await for (var eneity
         in imageDir.list(recursive: false, followLinks: false)) {
       var imagePath = eneity.path;
-      print("extrating image: " + imagePath);
+      // print("extrating image: " + imagePath);
 
       if (imagePath.endsWith(".jpg") ||
           imagePath.endsWith(".png") ||
@@ -161,7 +161,7 @@ class _ExportPageState extends State<ExportPage> {
     if (jsonFileContent.containsKey("picture_order")) {
       List<String> imgs = jsonFileContent["picture_order"].cast<String>();
       _previewImgPath = imgs[0];
-      print("setPreviewImg1: " + _previewImgPath);
+      // print("setPreviewImg1: " + _previewImgPath);
     } else {
       var projectDir = Directory(_folderPath);
       await for (var entity
@@ -170,7 +170,7 @@ class _ExportPageState extends State<ExportPage> {
         if (_previewImgPath.endsWith(".jpg") ||
             _previewImgPath.endsWith(".png") ||
             _previewImgPath.endsWith(".jpeg")) {
-          print("setPreviewImg2: " + _previewImgPath);
+          // print("setPreviewImg2: " + _previewImgPath);
           break;
         }
       }
@@ -178,14 +178,14 @@ class _ExportPageState extends State<ExportPage> {
     setState(() {
       _isImgLoading = false;
     });
-    print("Preview Image path: " + _previewImgPath);
+    // print("Preview Image path: " + _previewImgPath);
   }
 
   // create the pdf file and save; file path referenced by the pdfFilePath field;
   createPdf() async {
-    print("Inside createSavePdfFile()");
+    // print("Inside createSavePdfFile()");
     this._pdfFilePath = await createPdfFromImages();
-    print("Finish createSavePdfFile(), " + _pdfFilePath);
+    // print("Finish createSavePdfFile(), " + _pdfFilePath);
   }
 
   // rename the pdf file (path & title) upon inputing the new title
@@ -451,23 +451,23 @@ class _ExportPageState extends State<ExportPage> {
               },
               child: const Text("Extract Text"),
             ),
-            SizedBox(height: 30),
-            Container(
-              width: 150,
-              height: 60,
-              child: ElevatedButton(
-                  onPressed: () {
-                    print("folderPath: " + _folderPath);
-                    print(_titleController.text);
-                    print(_pdfFilePath);
-                    print(_passwordController.text);
-                    print(_pdfFilePathEncrypted);
-                  },
-                  child: Text(
-                    "PRINT",
-                    style: TextStyle(fontSize: 18),
-                  )),
-            )
+            // SizedBox(height: 30),
+            // Container(
+            //   width: 150,
+            //   height: 60,
+            //   child: ElevatedButton(
+            //       onPressed: () {
+            //         print("folderPath: " + _folderPath);
+            //         print(_titleController.text);
+            //         print(_pdfFilePath);
+            //         print(_passwordController.text);
+            //         print(_pdfFilePathEncrypted);
+            //       },
+            //       child: Text(
+            //         "PRINT",
+            //         style: TextStyle(fontSize: 18),
+            //       )),
+            // )
           ],
         ),
       ),
@@ -476,14 +476,14 @@ class _ExportPageState extends State<ExportPage> {
 }
 
 Future<String> encryptPdfHelper(Map map) async {
-  print(">>>>>>>>>>> inside encryptPdfHelper - start");
+  // print(">>>>>>>>>>> inside encryptPdfHelper - start");
   String pdfToEncryptPath = map["pdfToEncryptPath"];
   String password = map["password"];
 
   final PdfDocument document =
       PdfDocument(inputBytes: await File(pdfToEncryptPath).readAsBytes());
   final PdfSecurity security = document.security;
-  print(">>>>>>>>>>> inside encryptPdfHelper - document created");
+  // print(">>>>>>>>>>> inside encryptPdfHelper - document created");
   security.userPassword = password;
 
   int lastSeperator = pdfToEncryptPath.lastIndexOf(Platform.pathSeparator);
@@ -492,8 +492,8 @@ Future<String> encryptPdfHelper(Map map) async {
       pdfToEncryptPath.substring(lastSeperator + 1);
   File encryptedFile =
       await File(encryptedFilePath).writeAsBytes(document.save());
-  print(">>>>>>>>>>> inside encryptPdfHelper - encryptedPFilePath: " +
-      encryptedFilePath);
+  // print(">>>>>>>>>>> inside encryptPdfHelper - encryptedPFilePath: " +
+  //     encryptedFilePath);
 
   document.dispose();
   return encryptedFile.path;
