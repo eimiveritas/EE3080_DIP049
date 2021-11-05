@@ -70,7 +70,7 @@ class PictureObj extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.all(10),
               child: Text(
-                "Page ${this.picIndex} (${filePath.split("/").last})",
+                "Page ${this.picIndex + 1}",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     backgroundColor: Colors.blue, color: Colors.white),
