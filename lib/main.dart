@@ -6,6 +6,7 @@ import 'edit_project.dart';
 //import 'export_page.dart';
 //import 'export_page_pdf_preview.dart';
 import 'ProcessingScreen.dart';
+import 'export_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -25,7 +26,8 @@ class MyApp extends StatelessWidget {
         '/edit_page': (context) => EditProjectPage(
             extraArgs: ModalRoute.of(context)!.settings.arguments),
         '/process': (context) => ProcessingScreen(),
-        // '/export_page': (context) => ExportPage(),
+        '/export_page': (context) =>
+            ExportPage(ModalRoute.of(context)!.settings.arguments as String),
       },
     );
   }

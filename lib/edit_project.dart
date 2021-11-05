@@ -411,17 +411,17 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   child: TextButton(
                 child: Text("Export"),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            ExportPage(arguments['projectFolderPath'])),
-                  );
-                  // Navigator.pushNamed(
+                  // Navigator.push(
                   //   context,
-                  //   '/export_page',
-                  //   arguments: {'folderPath': arguments["folderPath"]},
+                  //   MaterialPageRoute(
+                  //       builder: (context) =>
+                  //           ExportPage(arguments['projectFolderPath'])),
                   // );
+                  Navigator.pushNamed(
+                    context,
+                    '/export_page',
+                    arguments: arguments["projectFolderPath"],
+                  );
                 },
                 style: TextButton.styleFrom(
                     primary: Colors.white,

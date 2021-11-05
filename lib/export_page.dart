@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:ee3080_dip049/folderManager.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart' as ml_vision;
@@ -34,20 +35,25 @@ class _ExportPageState extends State<ExportPage> {
   final _titleController = TextEditingController(text: "Untitled");
   final _passwordController = TextEditingController(text: "");
 
-  String pdfFilePath = "";
-  String pdfFilePathEncrypted = "";
+  String _pdfFilePath = "";
+  String _pdfFilePathEncrypted = "";
 
   String _previewImgPath = "";
-  bool isImgLoading = true;
+  bool _isImgLoading = true;
 
-  String textMultiImages = "";
+  String _textMultiImages = "";
   final RoundedLoadingButtonController _extractTextController =
+      RoundedLoadingButtonController();
+
+  final RoundedLoadingButtonController _shareController =
       RoundedLoadingButtonController();
 
   @override
   void initState() {
     super.initState();
+    print("inside initState: " + _folderPath);
     setPreviewImg();
+    setTitle();
     createPdf();
   }
 
@@ -55,19 +61,19 @@ class _ExportPageState extends State<ExportPage> {
     Directory dir = Directory(_folderPath);
 
     File txtFile = File(Path.join(dir.path, "textExtracted.txt"));
-    await txtFile.writeAsString(textMultiImages);
+    await txtFile.writeAsString(_textMultiImages);
     print(">>>>>>>>>>>Txt file to share: " + txtFile.path);
 
     if (inFile) {
       Share.shareFiles([txtFile.path]);
     } else {
-      Share.share(textMultiImages);
+      Share.share(_textMultiImages);
     }
   }
 
   extractTextFromImages() async {
     // assume alr extracted since we have only one pdf file to share;
-    if (textMultiImages != "") {
+    if (_textMultiImages != "") {
       return;
     }
     Directory imageDir = Directory(_folderPath);
@@ -89,12 +95,12 @@ class _ExportPageState extends State<ExportPage> {
         for (ml_vision.TextBlock block in visionText.blocks) {
           for (ml_vision.TextLine line in block.lines) {
             for (ml_vision.TextElement word in line.elements) {
-              textMultiImages = textMultiImages + word.text + ' ';
+              _textMultiImages = _textMultiImages + word.text + ' ';
             }
-            textMultiImages = textMultiImages + '\n';
+            _textMultiImages = _textMultiImages + '\n';
           }
         }
-        textMultiImages = textMultiImages + "\n\n";
+        _textMultiImages = _textMultiImages + "\n\n";
 
         textRecognizer.close();
       }
@@ -136,14 +142,41 @@ class _ExportPageState extends State<ExportPage> {
         });
   }
 
+  setTitle() async {
+    File jsonFile = File(Path.join(_folderPath, 'config.json'));
+    if (jsonFile.existsSync()) {
+      Map<String, dynamic> jsonFileContent =
+          json.decode(jsonFile.readAsStringSync());
+      if (jsonFileContent.containsKey("project_title")) {
+        _titleController.text = jsonFileContent["project_title"];
+      }
+    }
+  }
+
   // use the first page of pdf file to be the preview image
   setPreviewImg() async {
-    var projectDir = Directory(_folderPath);
-    _previewImgPath =
-        (await projectDir.list(recursive: false, followLinks: false).first)
-            .path;
+    File jsonFile = File(Path.join(_folderPath, 'config.json'));
+    Map<String, dynamic> jsonFileContent =
+        json.decode(jsonFile.readAsStringSync());
+    if (jsonFileContent.containsKey("picture_order")) {
+      List<String> imgs = jsonFileContent["picture_order"].cast<String>();
+      _previewImgPath = imgs[0];
+      print("setPreviewImg1: " + _previewImgPath);
+    } else {
+      var projectDir = Directory(_folderPath);
+      await for (var entity
+          in projectDir.list(recursive: false, followLinks: false)) {
+        _previewImgPath = entity.path;
+        if (_previewImgPath.endsWith(".jpg") ||
+            _previewImgPath.endsWith(".png") ||
+            _previewImgPath.endsWith(".jpeg")) {
+          print("setPreviewImg2: " + _previewImgPath);
+          break;
+        }
+      }
+    }
     setState(() {
-      isImgLoading = false;
+      _isImgLoading = false;
     });
     print("Preview Image path: " + _previewImgPath);
   }
@@ -151,8 +184,8 @@ class _ExportPageState extends State<ExportPage> {
   // create the pdf file and save; file path referenced by the pdfFilePath field;
   createPdf() async {
     print("Inside createSavePdfFile()");
-    this.pdfFilePath = await createPdfFromImages(_folderPath);
-    print("Finish createSavePdfFile(), " + pdfFilePath);
+    this._pdfFilePath = await createPdfFromImages();
+    print("Finish createSavePdfFile(), " + _pdfFilePath);
   }
 
   // rename the pdf file (path & title) upon inputing the new title
@@ -162,35 +195,29 @@ class _ExportPageState extends State<ExportPage> {
     //     this.pdfFilePath.substring(0, lastSeparator + 1) + newTitle + ".pdf";
     var newPath =
         Path.join(await folderManager.tempFolderPath, "$newTitle.pdf");
-    this.pdfFilePath = File(this.pdfFilePath).renameSync(newPath).path;
+    this._pdfFilePath = File(this._pdfFilePath).renameSync(newPath).path;
 
     _titleButtonController.success();
-    print("Renamed pdf path: " + this.pdfFilePath);
+    print("Renamed pdf path: " + this._pdfFilePath);
   }
 
   // share the file; if password is set, share the encrypted one
   sharePdf() async {
-    String pdfToShare = this.pdfFilePath;
-    if (this.pdfFilePathEncrypted != "") {
-      pdfToShare = this.pdfFilePathEncrypted;
+    String pdfToShare = this._pdfFilePath;
+    if (this._pdfFilePathEncrypted != "") {
+      pdfToShare = this._pdfFilePathEncrypted;
     }
 
-    // if (_passwordController.text != "") {
-    //   pdfToShare =
-    //       await encryptePdf(this.pdfFilePath, _passwordController.text);
-    //   var newPath = Path.join(await folderManager.tempFolderPath,
-    //       "Encrypted-${this._titleController.text}.pdf");
-    //   pdfToShare = File(pdfToShare).renameSync(newPath).path;
-    // }
     print("file to share: " + pdfToShare);
     Share.shareFiles([pdfToShare]);
+    _shareController.reset();
   }
 
   // use the _passwordController.text to set the password for pdf
   // called when sharing;
   encryptPdf(String pdfToEncryptPath, String password) async {
     if (password == "") {
-      this.pdfFilePathEncrypted = "";
+      this._pdfFilePathEncrypted = "";
       _encryptButtonController.success(); // terminate if empty password is set;
       return;
     }
@@ -198,42 +225,55 @@ class _ExportPageState extends State<ExportPage> {
     Map map = Map();
     map["pdfToEncryptPath"] = pdfToEncryptPath;
     map["password"] = password;
-    pdfFilePathEncrypted = await compute(
+    _pdfFilePathEncrypted = await compute(
         encryptPdfHelper, map); // another thread for dealing with encrypt
     _encryptButtonController.success();
   }
 
-  // encryptePdf(String pdfToEncryptPath, String password) async {
-  //   if (password == "") {
-  //     this.pdfFilePathEncrypted = "";
-  //     _encryptButtonController.success(); // terminate if empty password is set;
-  //   }
+  // create the pdf file, save the pdf file under tempFolder, save a reference as a field;
+  createPdfFromImages() async {
+    List<String> listOfImages = await getListOfImages();
 
-  //   final syncpdf.PdfDocument document = syncpdf.PdfDocument(
-  //       inputBytes: await File(pdfToEncryptPath).readAsBytes());
+    final pdf = pw.Document();
+    for (String imgPath in listOfImages) {
+      var image = pw.MemoryImage(File(imgPath).readAsBytesSync());
+      pdf.addPage(pw.Page(build: (pw.Context context) {
+        return pw.FullPage(
+          child: pw.Image(image),
+          ignoreMargins: true,
+        );
+      }));
+    }
 
-  //   final syncpdf.PdfSecurity security = document.security;
+    final file = File(Path.join(
+        await folderManager.tempFolderPath, _titleController.text + ".pdf"));
+    await file.writeAsBytes(await pdf.save());
 
-  //   security.userPassword = password;
-  //   // security.ownerPassword = 'ownerpassword@123';
+    print("Inside createPdfFromImages method: " + file.path);
+    return file.path;
+  }
 
-  //   File encryptedFile = await File(pdfToEncryptPath.substring(
-  //               0, pdfToEncryptPath.lastIndexOf(Platform.pathSeparator)) +
-  //           "Encrypted-${this._titleController.text}.pdf")
-  //       .writeAsBytes(document.save());
-
-  //   // change pdfFilePathUponSetting;
-  //   this.pdfFilePathEncrypted = encryptedFile.path;
-
-  //   document.dispose();
-
-  //   _encryptButtonController.success();
-  // }
+  // using json file;
+  Future<List<String>> getListOfImages() async {
+    File jsonFile = File(Path.join(_folderPath, 'config.json'));
+    print("json file: " + jsonFile.path);
+    if (jsonFile.existsSync()) {
+      print("json file exists. ");
+      Map<String, dynamic> jsonFileContent =
+          json.decode(jsonFile.readAsStringSync());
+      if (jsonFileContent.containsKey("picture_order")) {
+        print("picture_order exists");
+        return jsonFileContent["picture_order"].cast<String>();
+      }
+    }
+    return getListOfImagesWithoutJson();
+  }
 
   // return a list containing all images under the project folder;
-  Future<List<String>> getListOfImages(folderPath) async {
+  Future<List<String>> getListOfImagesWithoutJson() async {
+    print("Inside getListOfImagesWithoutJson");
     List<String> listOfDir = [];
-    var systemTempDir = Directory(folderPath);
+    var systemTempDir = Directory(_folderPath);
     await for (var entity
         in systemTempDir.list(recursive: false, followLinks: false)) {
       var path = entity.path;
@@ -247,32 +287,10 @@ class _ExportPageState extends State<ExportPage> {
     return listOfDir;
   }
 
-  // create the pdf file of all images under the project folder, save the pdf file under tempFolder, save a reference as a field;
-  Future<String> createPdfFromImages(String folderPath) async {
-    List<String> listOfImages = await getListOfImages(folderPath);
-
-    final pdf = pw.Document();
-    for (String imgPath in listOfImages) {
-      var image = pw.MemoryImage(File(imgPath).readAsBytesSync());
-      pdf.addPage(pw.Page(build: (pw.Context context) {
-        return pw.FullPage(
-          child: pw.Image(image),
-          ignoreMargins: true,
-        );
-      }));
-    }
-
-    final file =
-        File(Path.join(await folderManager.tempFolderPath, "Untitled.pdf"));
-    await file.writeAsBytes(await pdf.save());
-
-    print("Inside createPdfFromImages method: " + file.path);
-    return file.path;
-  }
-
   @override
   Widget build(BuildContext context) {
     // final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
+    // _titleController.text = Path.basename(_folderPath);
 
     return Scaffold(
       appBar: AppBar(
@@ -285,20 +303,21 @@ class _ExportPageState extends State<ExportPage> {
             SizedBox(
               height: 40,
             ),
-            Container(
-              width: 200,
+            SizedBox(
               height: 200,
+              width: 260,
               child: IconButton(
+                padding: const EdgeInsets.all(0),
                 onPressed: () {
                   print("Image Icon pressed");
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) =>
-                            PdfPreviewPage(_titleController.text, pdfFilePath)),
+                        builder: (context) => PdfPreviewPage(
+                            _titleController.text, _pdfFilePath)),
                   );
                 },
-                icon: isImgLoading
+                icon: _isImgLoading
                     ? Center(child: CircularProgressIndicator())
                     : Image.file(File(_previewImgPath)),
                 // icon: Image.network(
@@ -307,7 +326,7 @@ class _ExportPageState extends State<ExportPage> {
               ),
             ),
             SizedBox(
-              height: 50,
+              height: 30,
             ),
             Card(
               child: Row(
@@ -363,7 +382,7 @@ class _ExportPageState extends State<ExportPage> {
                       },
                       onSubmitted: (_) {
                         _encryptButtonController.start();
-                        encryptPdf(this.pdfFilePath, _passwordController.text);
+                        encryptPdf(this._pdfFilePath, _passwordController.text);
                       },
                     ),
                   ),
@@ -377,7 +396,7 @@ class _ExportPageState extends State<ExportPage> {
                       child: Icon(Icons.edit),
                       controller: _encryptButtonController,
                       onPressed: () {
-                        encryptPdf(this.pdfFilePath, _passwordController.text);
+                        encryptPdf(this._pdfFilePath, _passwordController.text);
                         // encryptePdf(this.pdfFilePath, _passwordController.text);
                       },
                     ),
@@ -385,37 +404,17 @@ class _ExportPageState extends State<ExportPage> {
                 ],
               ),
             ),
-            // Container(
-            //   color: Colors.blue,
-            //   child: TextField(
-            //     textAlign: TextAlign.start,
-            //     // controller: _passwordController,
-            //     decoration: InputDecoration(
-            //       labelText: "Set Password for PDF?",
-            //     ),
-            //     onSubmitted: (password) {
-            //       this.password = password;
-            //       encryptePdf(this.pdfFilePath, password);
-            //     },
-            //   ),
-            // ),
-            SizedBox(
-              height: 50,
+            SizedBox(height: 30),
+            RoundedLoadingButton(
+              controller: _shareController,
+              onPressed: () {
+                print("READY TO SHARE");
+                sharePdf();
+                // Navigator.popUntil(
+                //     context, (Route<dynamic> predicate) => predicate.isFirst);
+              },
+              child: Text("Share"),
             ),
-            Container(
-              width: 300,
-              height: 45,
-              child: ElevatedButton(
-                onPressed: () {
-                  print("READY TO SHARE");
-                  sharePdf();
-                  Navigator.popUntil(
-                      context, (Route<dynamic> predicate) => predicate.isFirst);
-                },
-                child: Text("SHARE"),
-              ),
-            ),
-
             const SizedBox(height: 10.0),
             RoundedLoadingButton(
               controller: _extractTextController,
@@ -427,7 +426,7 @@ class _ExportPageState extends State<ExportPage> {
                     title: const Text('Extracted text'),
                     content: Expanded(
                       child: SingleChildScrollView(
-                        child: Text(textMultiImages),
+                        child: Text(_textMultiImages),
                       ),
                     ),
                     actions: <Widget>[
@@ -458,10 +457,11 @@ class _ExportPageState extends State<ExportPage> {
               height: 60,
               child: ElevatedButton(
                   onPressed: () {
+                    print("folderPath: " + _folderPath);
                     print(_titleController.text);
-                    print(pdfFilePath);
+                    print(_pdfFilePath);
                     print(_passwordController.text);
-                    print(pdfFilePathEncrypted);
+                    print(_pdfFilePathEncrypted);
                   },
                   child: Text(
                     "PRINT",
