@@ -36,7 +36,10 @@ class PictureObj extends StatelessWidget {
       child: Align(
         alignment: Alignment.topCenter,
         heightFactor: 1,
-        child: Image.file(File(filePath)),
+        child: Image.file(
+          File(filePath),
+          key: UniqueKey(),
+        ),
       ),
     );
     var stack = new Stack(
@@ -46,6 +49,10 @@ class PictureObj extends StatelessWidget {
             child: InkWell(
               onTap: () {
                 debugPrint("You clicked on page!");
+                Navigator.pushNamed(context, '/process', arguments: {
+                  'imagePath': filePath,
+                  'projectFolderPath': File(filePath).parent.path,
+                });
               },
               child: clip,
             )),

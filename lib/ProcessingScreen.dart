@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:image_editor/image_editor.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:oktoast/oktoast.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -324,6 +325,8 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
       return;
     }
 
+    Fluttertoast.showToast(msg: "Saving...", fontSize: 16.0);
+
     final ImageEditorOption option = ImageEditorOption();
 
     option.addOption(ClipOption.fromRect(rect));
@@ -355,7 +358,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
         String folderPathString =
             _getFolderfromImagePath(editedImagePathString);
-
+        new FileImage(File(editedImagePathString)).evict();
         setState(() {
           Navigator.pushReplacementNamed(context, '/edit_page', arguments: {
             'projectFolderPath': folderPathString,
@@ -370,7 +373,8 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     String editedImagePath = "";
 
     if (arguments.containsKey('projectFolderPath')) {
-      editedImagePath = "${arguments['projectFolderPath']}/$fileName";
+      //editedImagePath = "${arguments['projectFolderPath']}/$fileName";
+      editedImagePath = "${arguments['imagePath']}";
     } else {
       String value = await folderManager.createFolderWithCurrentDatetimePath;
       print(value);
