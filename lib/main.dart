@@ -26,8 +26,6 @@ class MyApp extends StatelessWidget {
         '/edit_page': (context) => EditProjectPage(
             extraArgs: ModalRoute.of(context)!.settings.arguments),
         '/process': (context) => ProcessingScreen(),
-        '/export_page': (context) =>
-            ExportPage(ModalRoute.of(context)!.settings.arguments as String),
       },
     );
   }
