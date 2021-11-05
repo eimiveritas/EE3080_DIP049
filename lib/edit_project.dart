@@ -398,6 +398,10 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   jsonFileContent["picture_order"] = pictureOrder;
                   jsonFileContent["project_title"] = _controller.text;
                   jsonFile.writeAsStringSync(json.encode(jsonFileContent));
+
+                  Navigator.pushReplacementNamed(context, '/', arguments: {
+                    'saved': 'true',
+                  });
                 },
                 style: TextButton.styleFrom(
                     primary: Colors.white,
