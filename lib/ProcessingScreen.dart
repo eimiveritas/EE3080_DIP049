@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:image_editor/image_editor.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:oktoast/oktoast.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -323,6 +324,8 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
       showToast('The img is null.');
       return;
     }
+
+    Fluttertoast.showToast(msg: "Saving...", fontSize: 16.0);
 
     final ImageEditorOption option = ImageEditorOption();
 
