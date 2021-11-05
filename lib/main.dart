@@ -28,7 +28,6 @@ class MyApp extends StatelessWidget {
             extraArgs: ModalRoute.of(context)!.settings.arguments),
         '/process': (context) => ProcessingScreen(),
         '/draw': (context) => DrawingScreen(),
-        // '/export_page': (context) => ExportPage(),
         '/export_page': (context) =>
             ExportPage(ModalRoute.of(context)!.settings.arguments as String),
       },
