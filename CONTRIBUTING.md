@@ -8,6 +8,6 @@ The [Open Source Guides](https://opensource.guide/) website has a collection of 
 * [Building Welcoming Communities](https://opensource.guide/building-community/)
 
 
-### [Code of Conduct](https://github.com/facebook/react-native/blob/HEAD/CODE_OF_CONDUCT.md)
+### [Code of Conduct](https://github.com/eimiveritas/EE3080_DIP049/blob/main/CODE_OF_CONDUCT.md)
 
-As a reminder, all contributors are expected to adhere to the [Code of Conduct](https://github.com/facebook/react-native/blob/HEAD/CODE_OF_CONDUCT.md).
+As a reminder, all contributors are expected to adhere to the [Code of Conduct](https://github.com/eimiveritas/EE3080_DIP049/blob/main/CODE_OF_CONDUCT.md).
