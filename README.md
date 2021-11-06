@@ -7,23 +7,16 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/facebook/react-native/blob/HEAD/LICENSE">
+  <a href="https://github.com/eimiveritas/EE3080_DIP049/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Project is released under the MIT license." />
   </a>
-  <a href="https://www.npmjs.org/package/react-native">
-    <img src="https://img.shields.io/npm/v/react-native?color=brightgreen&label=npm%20package" alt="Current npm package version." />
-  </a>
-  <a href="https://reactnative.dev/docs/contributing">
+  <a href="https://github.com/eimiveritas/EE3080_DIP049/blob/main/CONTRIBUTING.md">
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome!" />
   </a>
-  <a href="https://reactnative.dev/docs/contributing">
+  <a href="https://github.com/eimiveritas/EE3080_DIP049/blob/main/CONTRIBUTING.md">
     <img src="https://badges.frapsoft.com/os/v2/open-source.svg?v=103" alt="Open Sourced" />
   </a>
 </p>
-
-<h3 align="center">
-  <a href="https://reactnative.dev/docs/contributing">Contribute</a>
-</h3>
 
 DIY Scanner app is an extensible scanner app, based on the Flutter framework.
 
@@ -62,20 +55,18 @@ The main purpose of this repository is to continue evolving DIY Scanner app. We 
 Facebook has adopted a Code of Conduct that we expect project participants to adhere to.
 Please read the [full text][code] so that you can understand what actions will and will not be tolerated.
 
-[code]: https://code.fb.com/codeofconduct/
+[code]: https://github.com/eimiveritas/EE3080_DIP049/blob/main/CODE_OF_CONDUCT.md
 
 ### [Contributing Guide][contribute]
 
 Read our [**Contributing Guide**][contribute] to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to React Native.
 
-[contribute]: https://reactnative.dev/docs/contributing
+[contribute]: https://github.com/eimiveritas/EE3080_DIP049/blob/main/CONTRIBUTING.md
 
 
 ## 📄 License
 
-React Native is MIT licensed, as found in the [LICENSE][l] file.
+DIY Scanner is MIT licensed, as found in the [LICENSE][l] file.
 
-React Native documentation is Creative Commons licensed, as found in the [LICENSE-docs][ld] file.
+[l]: https://github.com/eimiveritas/EE3080_DIP049/blob/main/LICENSE
 
-[l]: https://github.com/facebook/react-native/blob/HEAD/LICENSE
-[ld]: https://github.com/facebook/react-native/blob/HEAD/LICENSE-docs
