@@ -119,44 +119,92 @@ class _EditProjectPageState extends State<EditProjectPage> {
 
   TextEditingController _controller = TextEditingController();
 
+  // Future _openCamera(arguments) async {
+  //   var picker = ImagePicker();
+  //   final image = await picker.pickImage(source: ImageSource.camera);
+  //   var imagePathString = "";
+  //   //File('/storage/emulated/0/Download/counter.txt')
+  //   folderManager.tempFolderPath.then((value) {
+  //     print(value);
+  //     imagePathString = "${value}${image!.path.split('/').last}";
+
+  //     File(image.path).copy(imagePathString);
+
+  //     setState(() {
+  //       Navigator.pushNamed(context, '/process', arguments: {
+  //         'imagePath': imagePathString,
+  //         'projectFolderPath': arguments["projectFolderPath"],
+  //       });
+  //     });
+  //   });
+  // }
+
   Future _openCamera(arguments) async {
     var picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.camera);
-    var imagePathString = "";
-    //File('/storage/emulated/0/Download/counter.txt')
-    folderManager.tempFolderPath.then((value) {
-      print(value);
-      imagePathString = "${value}${image!.path.split('/').last}";
+    _storeImageInTempFolderAndProcessIt(image, arguments);
+  }
 
-      File(image.path).copy(imagePathString);
+  void _storeImageInTempFolderAndProcessIt(originalImage, arguments) {
+    final newPathOfImageTakenStoredInTempFolder =
+        "${arguments["projectFolderPath"]}/${originalImage!.path.split('/').last}";
+    print("===========================");
+    print("===========================");
+    print("===========================");
+    print("===========================");
+    print("===========================");
+    print(newPathOfImageTakenStoredInTempFolder);
+    // a File consisiting an image is created from the image path. This file is now stored in the imagePathString.
+    File(originalImage.path).copy(newPathOfImageTakenStoredInTempFolder);
 
-      setState(() {
-        Navigator.pushNamed(context, '/process', arguments: {
-          'imagePath': imagePathString,
-          'projectFolderPath': arguments["projectFolderPath"],
-        });
+    File jsonFile = File(arguments["projectFolderPath"] + "/config.json");
+
+    Map<String, dynamic> jsonFileContent = {};
+    if (jsonFile.existsSync()) {
+      jsonFileContent = json.decode(jsonFile.readAsStringSync());
+    }
+
+    List<String> pictureOrder = [];
+    for (var i = 0; i < gridOfPicsWithAddNewPicBtn.length; i++) {
+      if (i == gridOfPicsWithAddNewPicBtn.length - 1) {
+        // -1 cuz of the add new pic button
+        continue;
+      }
+      var picObj = (gridOfPicsWithAddNewPicBtn[i] as PictureObj);
+      pictureOrder.add(picObj.filePath);
+    }
+    pictureOrder.add(newPathOfImageTakenStoredInTempFolder);
+    jsonFileContent["picture_order"] = pictureOrder;
+    jsonFileContent["project_title"] = _controller.text;
+    jsonFile.writeAsStringSync(json.encode(jsonFileContent));
+
+    setState(() {
+      Navigator.pushNamed(context, '/process', arguments: {
+        'imagePath': newPathOfImageTakenStoredInTempFolder,
+        'projectFolderPath': arguments["projectFolderPath"],
       });
     });
   }
 
+  // Future _openGallery(arguments) async {
+  //   var picker = ImagePicker();
+  //   final image = await picker.pickImage(source: ImageSource.gallery);
+  //   var imagePathString = "";
+  //   //File('/storage/emulated/0/Download/counter.txt')
+  //   folderManager.tempFolderPath.then((value) {
+  //     setState(() {
+  //       Navigator.pushNamed(context, '/process', arguments: {
+  //         'imagePath': imagePathString,
+  //         'projectFolderPath': arguments["projectFolderPath"],
+  //       });
+  //     });
+  //   });
+  // }
+
   Future _openGallery(arguments) async {
     var picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
-    var imagePathString = "";
-    //File('/storage/emulated/0/Download/counter.txt')
-    folderManager.tempFolderPath.then((value) {
-      print(value);
-      imagePathString = "${value}${image!.path.split('/').last}";
-
-      File(image.path).copy(imagePathString);
-
-      setState(() {
-        Navigator.pushNamed(context, '/process', arguments: {
-          'imagePath': imagePathString,
-          'projectFolderPath': arguments["projectFolderPath"],
-        });
-      });
-    });
+    _storeImageInTempFolderAndProcessIt(image, arguments);
   }
 
   Future<void> _showChoiceDialog(BuildContext context, arguments) {
@@ -164,7 +212,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-              title: Text('Launch App'),
+              title: Text('Select Source'),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(15))),
               elevation: 24.0,
@@ -428,6 +476,27 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   //       builder: (context) =>
                   //           ExportPage(arguments['projectFolderPath'])),
                   // );
+                  File jsonFile =
+                      File(arguments["projectFolderPath"] + "/config.json");
+
+                  Map<String, dynamic> jsonFileContent = {};
+                  if (jsonFile.existsSync()) {
+                    jsonFileContent = json.decode(jsonFile.readAsStringSync());
+                  }
+
+                  List<String> pictureOrder = [];
+                  for (var i = 0; i < gridOfPicsWithAddNewPicBtn.length; i++) {
+                    if (i == gridOfPicsWithAddNewPicBtn.length - 1) {
+                      // -1 cuz of the add new pic button
+                      continue;
+                    }
+                    var picObj = (gridOfPicsWithAddNewPicBtn[i] as PictureObj);
+                    pictureOrder.add(picObj.filePath);
+                  }
+                  jsonFileContent["picture_order"] = pictureOrder;
+                  jsonFileContent["project_title"] = _controller.text;
+                  jsonFile.writeAsStringSync(json.encode(jsonFileContent));
+                  Fluttertoast.showToast(msg: "Exporting...", fontSize: 16.0);
                   Navigator.pushNamed(
                     context,
                     '/export_page',
