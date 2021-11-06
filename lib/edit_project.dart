@@ -249,6 +249,17 @@ class _EditProjectPageState extends State<EditProjectPage> {
     return listOfPicsPath;
   }
 
+  void deleteTempFolderFiles() {
+    folderManager.tempFolderPath.then((tempFolderPathStr) async {
+      var tempFolderDir = Directory(tempFolderPathStr);
+      await for (var pic
+          in tempFolderDir.list(recursive: false, followLinks: false)) {
+        print("Deleting ${pic.path}");
+        pic.delete();
+      }
+    });
+  }
+
   void _generateGridOfPics(projectFolderPath, arguments) {
     getAllPicturesPath(projectFolderPath).then((listOfPicsPath) {
       List<Widget> gridOfPicsTemp = [];
@@ -435,6 +446,8 @@ class _EditProjectPageState extends State<EditProjectPage> {
                 onPressed: () {
                   File jsonFile =
                       File(arguments["projectFolderPath"] + "/config.json");
+
+                  deleteTempFolderFiles();
 
                   Map<String, dynamic> jsonFileContent = {};
                   if (jsonFile.existsSync()) {
