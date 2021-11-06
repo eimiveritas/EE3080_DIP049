@@ -194,6 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Projects',
       home: Scaffold(
         appBar: AppBar(

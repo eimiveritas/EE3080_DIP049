@@ -37,89 +37,93 @@ class _DrawingScreenState extends State<DrawingScreen> {
     File imageFile = File(arguments['editedImagePath']);
 
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: Scaffold(
-      appBar: AppBar(
-        title: Text('Draw Image', style: TextStyle(color: Colors.white)),
-        actions: <Widget>[
-          IconButton(
-              tooltip: "Clear",
-              icon: Icon(Icons.clear),
-              onPressed: () {
-                setState(() {
-                  points.clear();
-                });
-              }),
-          IconButton(
-              tooltip: "Save",
-              icon: Icon(Icons.check),
-              onPressed: () async {
-                await _save(arguments['projectFolderPath'],
-                    arguments['editedImagePath']);
-              }),
-        ],
-      ),
-      body: RepaintBoundary(
-        key: globalKey,
-        child: Stack(
-          children: <Widget>[
-            Container(
-                child: Image.file(imageFile,
-                    height: double.infinity, fit: BoxFit.contain)),
-            GestureDetector(
-              onPanUpdate: (details) {
-                setState(() {
-                  RenderBox renderBox = context.findRenderObject() as RenderBox;
-                  points.add(TouchPoints(
-                      points: renderBox.globalToLocal(details.globalPosition),
-                      paint: Paint()
-                        ..strokeCap = strokeType
-                        ..isAntiAlias = true
-                        ..color = selectedColor
-                        ..strokeWidth = strokeWidth));
-                });
-              },
-              onPanEnd: (details) {
-                setState(() {
-                  points.add(TouchPoints(
-                      points: Offset.infinite,
-                      paint: Paint()
-                        ..strokeCap = strokeType
-                        ..isAntiAlias = true
-                        ..color = selectedColor
-                        ..strokeWidth = strokeWidth));
-                });
-              },
-              child: CustomPaint(
-                size: Size.infinite,
-                painter: MyPainter(
-                  pointsList: points,
+          appBar: AppBar(
+            title: Text('Draw Image', style: TextStyle(color: Colors.white)),
+            actions: <Widget>[
+              IconButton(
+                  tooltip: "Clear",
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    setState(() {
+                      points.clear();
+                    });
+                  }),
+              IconButton(
+                  tooltip: "Save",
+                  icon: Icon(Icons.check),
+                  onPressed: () async {
+                    await _save(arguments['projectFolderPath'],
+                        arguments['editedImagePath']);
+                  }),
+            ],
+          ),
+          body: RepaintBoundary(
+            key: globalKey,
+            child: Stack(
+              children: <Widget>[
+                Container(
+                    child: Image.file(imageFile,
+                        height: double.infinity, fit: BoxFit.contain)),
+                GestureDetector(
+                  onPanUpdate: (details) {
+                    setState(() {
+                      RenderBox renderBox =
+                          context.findRenderObject() as RenderBox;
+                      points.add(TouchPoints(
+                          points:
+                              renderBox.globalToLocal(details.globalPosition),
+                          paint: Paint()
+                            ..strokeCap = strokeType
+                            ..isAntiAlias = true
+                            ..color = selectedColor
+                            ..strokeWidth = strokeWidth));
+                    });
+                  },
+                  onPanEnd: (details) {
+                    setState(() {
+                      points.add(TouchPoints(
+                          points: Offset.infinite,
+                          paint: Paint()
+                            ..strokeCap = strokeType
+                            ..isAntiAlias = true
+                            ..color = selectedColor
+                            ..strokeWidth = strokeWidth));
+                    });
+                  },
+                  child: CustomPaint(
+                    size: Size.infinite,
+                    painter: MyPainter(
+                      pointsList: points,
+                    ),
+                  ),
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: AnimatedFloatingActionButton(
+                    fabButtons: fabOptionColor(),
+                    colorStartAnimation: Colors.blue,
+                    colorEndAnimation: Colors.cyan,
+                    animatedIconData: AnimatedIcons.menu_close,
+                  ),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: AnimatedFloatingActionButton(
-                fabButtons: fabOptionColor(),
-                colorStartAnimation: Colors.blue,
-                colorEndAnimation: Colors.cyan,
-                animatedIconData: AnimatedIcons.menu_close,
-              ),
+          ),
+          floatingActionButton: Container(
+            height: 100,
+            width: 100,
+            child: FittedBox(
+              child: FloatingActionButton(
+                  tooltip: "Stroke",
+                  onPressed: _pickStroke,
+                  child: Icon(Icons.brush)),
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: Container(
-        height: 100,
-        width: 100,
-        child: FittedBox(
-          child: FloatingActionButton(
-              tooltip: "Stroke",
-              onPressed: _pickStroke,
-              child: Icon(Icons.brush)),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    ));
+          ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
+        ));
   }
 
   Widget colorMenuItem(Color color) {

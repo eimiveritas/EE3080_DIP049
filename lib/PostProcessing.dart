@@ -53,6 +53,7 @@ class PostProcessingState extends State<PostProcessing> {
     //if string data
     print(arguments['imagePath']);
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Stack(
         children: <Widget>[
           Transform.rotate(

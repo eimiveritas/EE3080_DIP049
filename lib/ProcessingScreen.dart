@@ -91,59 +91,60 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         cacheRawData: true);
 
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: Scaffold(
-      appBar: AppBar(
-        title: Text('Edit Image', style: TextStyle(color: Colors.white)),
-        actions: <Widget>[
-          IconButton(
-              icon: Icon(Icons.settings_backup_restore),
-              onPressed: () {
-                setState(() {
-                  sat = 1;
-                  bright = 0;
-                  con = 1;
-                });
-              }),
-          IconButton(
-              icon: Icon(Icons.check),
-              onPressed: () async {
-                await _doneToEdit(arguments);
-              }),
-        ],
-      ),
-      body: Container(
-          height: double.infinity,
-          child: Column(
-            children: <Widget>[
-              AspectRatio(
-                aspectRatio: 1,
-                child: buildImage(),
-              ),
-              Expanded(
-                child: SliderTheme(
-                  data: const SliderThemeData(
-                    showValueIndicator: ShowValueIndicator.never,
+          appBar: AppBar(
+            title: Text('Edit Image', style: TextStyle(color: Colors.white)),
+            actions: <Widget>[
+              IconButton(
+                  icon: Icon(Icons.settings_backup_restore),
+                  onPressed: () {
+                    setState(() {
+                      sat = 1;
+                      bright = 0;
+                      con = 1;
+                    });
+                  }),
+              IconButton(
+                  icon: Icon(Icons.check),
+                  onPressed: () async {
+                    await _doneToEdit(arguments);
+                  }),
+            ],
+          ),
+          body: Container(
+              height: double.infinity,
+              child: Column(
+                children: <Widget>[
+                  AspectRatio(
+                    aspectRatio: 1,
+                    child: buildImage(),
                   ),
-                  child: Container(
-                    color: Colors.white,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Spacer(flex: 3),
-                        _buildSat(),
-                        Spacer(flex: 1),
-                        _buildBrightness(),
-                        Spacer(flex: 1),
-                        _buildCon(),
-                      ],
+                  Expanded(
+                    child: SliderTheme(
+                      data: const SliderThemeData(
+                        showValueIndicator: ShowValueIndicator.never,
+                      ),
+                      child: Container(
+                        color: Colors.white,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Spacer(flex: 3),
+                            _buildSat(),
+                            Spacer(flex: 1),
+                            _buildBrightness(),
+                            Spacer(flex: 1),
+                            _buildCon(),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ],
-          )),
-      bottomNavigationBar: _buildFunctions(arguments),
-    ));
+                ],
+              )),
+          bottomNavigationBar: _buildFunctions(arguments),
+        ));
   }
 
   Widget buildImage() {
