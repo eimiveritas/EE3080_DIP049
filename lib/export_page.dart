@@ -249,12 +249,22 @@ class _ExportPageState extends State<ExportPage> {
       }));
     }
 
+    _titleController.text = cleanUpPDFTitle(_titleController.text);
     final file = File(Path.join(
         await folderManager.tempFolderPath, _titleController.text + ".pdf"));
     await file.writeAsBytes(await pdf.save());
 
     // print("Inside createPdfFromImages method: " + file.path);
     return file.path;
+  }
+
+  //clean up the name of pdf file, replace special chars with _ and limit length
+  String cleanUpPDFTitle(String originTitle) {
+    String newTitle = originTitle.replaceAll(RegExp(r'[^A-Za-z0-9-_ ]'), '_');
+    if (newTitle.length > 255) {
+      newTitle = newTitle.substring(0, 255);
+    }
+    return newTitle;
   }
 
   // using json file;
@@ -345,6 +355,8 @@ class _ExportPageState extends State<ExportPage> {
                       controller: _titleController,
                       onSubmitted: (_) {
                         _titleButtonController.start();
+                        _titleController.text =
+                            cleanUpPDFTitle(_titleController.text);
                         renamePdf(_titleController.text);
                       },
                       onChanged: (_) {
@@ -365,6 +377,8 @@ class _ExportPageState extends State<ExportPage> {
                       child: Icon(Icons.edit),
                       controller: _titleButtonController,
                       onPressed: () {
+                        _titleController.text =
+                            cleanUpPDFTitle(_titleController.text);
                         renamePdf(_titleController.text);
                       },
                     ),
