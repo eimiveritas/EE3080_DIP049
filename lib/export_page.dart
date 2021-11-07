@@ -57,6 +57,7 @@ class _ExportPageState extends State<ExportPage> {
     createPdf();
   }
 
+  // share as txt file or share as plain text
   shareText(bool inFile) async {
     Directory dir = Directory(_folderPath);
 
@@ -71,6 +72,7 @@ class _ExportPageState extends State<ExportPage> {
     }
   }
 
+  // extract texts from multiple images forming the pdf file.
   extractTextFromImages() async {
     // assume alr extracted since we have only one pdf file to share;
     if (_textMultiImages != "") {
@@ -107,6 +109,8 @@ class _ExportPageState extends State<ExportPage> {
     }
   }
 
+  // show dialog window, relative funtion already in onPressed() body. deprecated with forgottion reason.
+  // after modification, can replace the function in onPressed() body for the purpose of modulation
   void _showExtractedText(String text) {
     showDialog(
         context: context,
@@ -198,7 +202,7 @@ class _ExportPageState extends State<ExportPage> {
     this._pdfFilePath = File(this._pdfFilePath).renameSync(newPath).path;
 
     _titleButtonController.success();
-    print("Renamed pdf path: " + this._pdfFilePath);
+    // print("Renamed pdf path: " + this._pdfFilePath);
   }
 
   // share the file; if password is set, share the encrypted one
@@ -208,7 +212,7 @@ class _ExportPageState extends State<ExportPage> {
       pdfToShare = this._pdfFilePathEncrypted;
     }
 
-    print("file to share: " + pdfToShare);
+    // print("file to share: " + pdfToShare);
     Share.shareFiles([pdfToShare]);
     _shareController.reset();
   }
@@ -249,20 +253,20 @@ class _ExportPageState extends State<ExportPage> {
         await folderManager.tempFolderPath, _titleController.text + ".pdf"));
     await file.writeAsBytes(await pdf.save());
 
-    print("Inside createPdfFromImages method: " + file.path);
+    // print("Inside createPdfFromImages method: " + file.path);
     return file.path;
   }
 
   // using json file;
   Future<List<String>> getListOfImages() async {
     File jsonFile = File(Path.join(_folderPath, 'config.json'));
-    print("json file: " + jsonFile.path);
+    // print("json file: " + jsonFile.path);
     if (jsonFile.existsSync()) {
-      print("json file exists. ");
+      // print("json file exists. ");
       Map<String, dynamic> jsonFileContent =
           json.decode(jsonFile.readAsStringSync());
       if (jsonFileContent.containsKey("picture_order")) {
-        print("picture_order exists");
+        // print("picture_order exists");
         return jsonFileContent["picture_order"].cast<String>();
       }
     }
@@ -271,7 +275,7 @@ class _ExportPageState extends State<ExportPage> {
 
   // return a list containing all images under the project folder;
   Future<List<String>> getListOfImagesWithoutJson() async {
-    print("Inside getListOfImagesWithoutJson");
+    // print("Inside getListOfImagesWithoutJson");
     List<String> listOfDir = [];
     var systemTempDir = Directory(_folderPath);
     await for (var entity
@@ -280,7 +284,7 @@ class _ExportPageState extends State<ExportPage> {
       if (path.endsWith(".jpg") ||
           path.endsWith(".png") ||
           path.endsWith(".jpeg")) {
-        print("Images: " + path);
+        // print("Images: " + path);
         listOfDir.add(path);
       }
     }
@@ -309,7 +313,7 @@ class _ExportPageState extends State<ExportPage> {
               child: IconButton(
                 padding: const EdgeInsets.all(0),
                 onPressed: () {
-                  print("Image Icon pressed");
+                  // print("Image Icon pressed");
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -408,7 +412,7 @@ class _ExportPageState extends State<ExportPage> {
             RoundedLoadingButton(
               controller: _shareController,
               onPressed: () {
-                print("READY TO SHARE");
+                // print("READY TO SHARE");
                 sharePdf();
                 // Navigator.popUntil(
                 //     context, (Route<dynamic> predicate) => predicate.isFirst);
