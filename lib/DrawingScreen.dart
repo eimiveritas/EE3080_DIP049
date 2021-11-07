@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:extended_image/extended_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
@@ -25,6 +28,22 @@ class _DrawingScreenState extends State<DrawingScreen> {
   StrokeCap strokeType = StrokeCap.round;
   double strokeWidth = 3.0;
   Color selectedColor = Colors.black;
+  final TextEditingController _controller = TextEditingController(text: 'yeet');
+  Offset offset = Offset.zero;
+  Offset logOoffset = Offset.zero;
+  bool widgetVisible = false;
+  bool textwidgetVisible = false;
+  void showandHideWidget() {
+    setState(() {
+      widgetVisible ^= true;
+    });
+  }
+
+  void showandHideTextWidget() {
+    setState(() {
+      textwidgetVisible ^= true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,93 +56,178 @@ class _DrawingScreenState extends State<DrawingScreen> {
     File imageFile = File(arguments['editedImagePath']);
 
     return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          appBar: AppBar(
-            title: Text('Draw Image', style: TextStyle(color: Colors.white)),
-            actions: <Widget>[
-              IconButton(
-                  tooltip: "Clear",
-                  icon: Icon(Icons.clear),
-                  onPressed: () {
-                    setState(() {
-                      points.clear();
-                    });
-                  }),
-              IconButton(
-                  tooltip: "Save",
-                  icon: Icon(Icons.check),
-                  onPressed: () async {
-                    await _save(arguments['projectFolderPath'],
-                        arguments['editedImagePath']);
-                  }),
-            ],
-          ),
-          body: RepaintBoundary(
-            key: globalKey,
-            child: Stack(
-              children: <Widget>[
-                Container(
-                    child: Image.file(imageFile,
-                        height: double.infinity, fit: BoxFit.contain)),
-                GestureDetector(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Draw Image', style: TextStyle(color: Colors.white)),
+          actions: <Widget>[
+            IconButton(
+                tooltip: "Clear",
+                icon: Icon(Icons.clear),
+                onPressed: () {
+                  setState(() {
+                    points.clear();
+                    widgetVisible = false;
+                    textwidgetVisible = false;
+                  });
+                }),
+            IconButton(
+                tooltip: "Save",
+                icon: Icon(Icons.check),
+                onPressed: () async {
+                  await _save(arguments['projectFolderPath'],
+                      arguments['editedImagePath']);
+                }),
+            IconButton(
+              tooltip: "Sticker",
+              icon: Icon(Icons.photo_size_select_actual_rounded),
+              onPressed: () {
+                setState(
+                  () {
+                    showandHideWidget();
+                  },
+                );
+              },
+            ),
+            IconButton(
+              tooltip: "Text",
+              icon: Icon(Icons.text_fields),
+              onPressed: () {
+                setState(
+                  () {
+                    showandHideTextWidget();
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+        body: RepaintBoundary(
+          key: globalKey,
+          child: Stack(
+            children: <Widget>[
+              Container(
+                  child: Image.file(imageFile,
+                      height: double.infinity, fit: BoxFit.contain)),
+              GestureDetector(
+                onPanUpdate: (details) {
+                  setState(() {
+                    RenderBox renderBox =
+                        context.findRenderObject() as RenderBox;
+                    points.add(TouchPoints(
+                        points: renderBox.globalToLocal(details.globalPosition),
+                        paint: Paint()
+                          ..strokeCap = strokeType
+                          ..isAntiAlias = true
+                          ..color = selectedColor
+                          ..strokeWidth = strokeWidth));
+                  });
+                },
+                onPanEnd: (details) {
+                  setState(() {
+                    points.add(TouchPoints(
+                        points: Offset.infinite,
+                        paint: Paint()
+                          ..strokeCap = strokeType
+                          ..isAntiAlias = true
+                          ..color = selectedColor
+                          ..strokeWidth = strokeWidth));
+                  });
+                },
+                child: CustomPaint(
+                  size: Size.infinite,
+                  painter: MyPainter(
+                    pointsList: points,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: offset.dx,
+                top: offset.dy,
+                child: GestureDetector(
                   onPanUpdate: (details) {
                     setState(() {
-                      RenderBox renderBox =
-                          context.findRenderObject() as RenderBox;
-                      points.add(TouchPoints(
-                          points:
-                              renderBox.globalToLocal(details.globalPosition),
-                          paint: Paint()
-                            ..strokeCap = strokeType
-                            ..isAntiAlias = true
-                            ..color = selectedColor
-                            ..strokeWidth = strokeWidth));
+                      offset = Offset(offset.dx + details.delta.dx,
+                          offset.dy + details.delta.dy);
                     });
                   },
-                  onPanEnd: (details) {
-                    setState(() {
-                      points.add(TouchPoints(
-                          points: Offset.infinite,
-                          paint: Paint()
-                            ..strokeCap = strokeType
-                            ..isAntiAlias = true
-                            ..color = selectedColor
-                            ..strokeWidth = strokeWidth));
-                    });
-                  },
-                  child: CustomPaint(
-                    size: Size.infinite,
-                    painter: MyPainter(
-                      pointsList: points,
+                  child: Visibility(
+                    maintainSize: true,
+                    maintainAnimation: true,
+                    maintainState: true,
+                    visible: textwidgetVisible,
+                    child: SizedBox(
+                      height: 100,
+                      width: 200,
+                      child: TextField(
+                        textAlign: TextAlign.center,
+                        controller: _controller,
+                      ),
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: AnimatedFloatingActionButton(
-                    fabButtons: fabOptionColor(),
-                    colorStartAnimation: Colors.blue,
-                    colorEndAnimation: Colors.cyan,
-                    animatedIconData: AnimatedIcons.menu_close,
+              ),
+              Positioned(
+                left: logOoffset.dx,
+                top: logOoffset.dy,
+                child: GestureDetector(
+                  onPanUpdate: (details) {
+                    setState(() {
+                      logOoffset = Offset(logOoffset.dx + details.delta.dx,
+                          logOoffset.dy + details.delta.dy);
+                    });
+                  },
+                  child: Visibility(
+                    maintainSize: true,
+                    maintainAnimation: true,
+                    maintainState: true,
+                    visible: widgetVisible,
+                    child: Container(
+                      height: 100,
+                      width: 100,
+                      color: Colors.transparent,
+                      margin: EdgeInsets.only(top: 20, bottom: 20),
+                      child: Center(
+                        child: (Image.asset('assets/images/NTUlogo.png')),
+                      ),
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          floatingActionButton: Container(
-            height: 100,
-            width: 100,
-            child: FittedBox(
-              child: FloatingActionButton(
+        ),
+        floatingActionButton: Stack(
+          children: [
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: AnimatedFloatingActionButton(
+                  fabButtons: fabOptionColor(),
+                  colorStartAnimation: Colors.blue,
+                  colorEndAnimation: Colors.cyan,
+                  animatedIconData: AnimatedIcons.menu_close,
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              right: 70,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: FloatingActionButton(
                   tooltip: "Stroke",
                   onPressed: _pickStroke,
-                  child: Icon(Icons.brush)),
+                  child: Icon(Icons.brush),
+                ),
+              ),
             ),
-          ),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerFloat,
-        ));
+          ],
+        ),
+      ),
+    );
   }
 
   Widget colorMenuItem(Color color) {
