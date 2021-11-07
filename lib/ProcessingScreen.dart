@@ -220,21 +220,21 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         builder: (BuildContext context) {
           return ClipRRect(
             child: AlertDialog(
-                title: Text("Proceeding to a new page to Draw"),
+                title: Text("Proceeding to a new page to Annotate"),
                 content: Text(
                     "Ensure that cropping, color adjustments, and rotation are finalised!"),
                 actionsAlignment: MainAxisAlignment.spaceEvenly,
                 actions: <Widget>[
                   TextButton(
+                      child: Text("Stay"),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }),
+                  TextButton(
                       child: Text("Proceed"),
                       onPressed: () async {
                         await _doneToDraw(arg);
                       }),
-                  TextButton(
-                      child: Text("Stay"),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      })
                 ]),
           );
         });

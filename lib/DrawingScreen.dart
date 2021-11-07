@@ -59,25 +59,8 @@ class _DrawingScreenState extends State<DrawingScreen> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Draw Image', style: TextStyle(color: Colors.white)),
+          title: Text('Annotate Image', style: TextStyle(color: Colors.white)),
           actions: <Widget>[
-            IconButton(
-                tooltip: "Clear",
-                icon: Icon(Icons.clear),
-                onPressed: () {
-                  setState(() {
-                    points.clear();
-                    widgetVisible = false;
-                    textwidgetVisible = false;
-                  });
-                }),
-            IconButton(
-                tooltip: "Save",
-                icon: Icon(Icons.check),
-                onPressed: () async {
-                  await _save(arguments['projectFolderPath'],
-                      arguments['editedImagePath']);
-                }),
             IconButton(
               tooltip: "Sticker",
               icon: Icon(Icons.photo_size_select_actual_rounded),
@@ -100,6 +83,23 @@ class _DrawingScreenState extends State<DrawingScreen> {
                 );
               },
             ),
+            IconButton(
+                tooltip: "Clear",
+                icon: Icon(Icons.clear),
+                onPressed: () {
+                  setState(() {
+                    points.clear();
+                    widgetVisible = false;
+                    textwidgetVisible = false;
+                  });
+                }),
+            IconButton(
+                tooltip: "Save",
+                icon: Icon(Icons.check),
+                onPressed: () async {
+                  await _save(arguments['projectFolderPath'],
+                      arguments['editedImagePath']);
+                }),
           ],
         ),
         body: RepaintBoundary(
