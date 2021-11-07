@@ -110,7 +110,7 @@ class _ExportPageState extends State<ExportPage> {
   }
 
   // show dialog window, relative funtion already in onPressed() body. deprecated with forgottion reason.
-  // after modification, can replace the function in onPressed() body for the purpose of modulation
+  // after modification, can replace the function in onPressed() body for the purpose of modularization
   void _showExtractedText(String text) {
     showDialog(
         context: context,
